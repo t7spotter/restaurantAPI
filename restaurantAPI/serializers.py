@@ -25,3 +25,11 @@ class CartSerializer(serializers.ModelSerializer):
 
     class Meta:
         db_table = 'carts'
+
+
+class OrderSerializer(serializers.ModelSerializer):
+    model = Order
+    fields = ['id', 'user', 'delivery_crew', 'status', 'total', 'date']
+
+    class Meta:
+        db_table = 'orders'
