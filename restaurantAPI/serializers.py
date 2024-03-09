@@ -11,4 +11,9 @@ class CategorySerializer(serializers.ModelSerializer):
         db_table = 'categories'
 
 
+class MenuItemSerializer(serializers.ModelSerializer):
+    model = MenuItem
+    fields = ['id', 'title', 'price', 'featured', 'category']
 
+    class Meta:
+        db_table = 'menu_items'
