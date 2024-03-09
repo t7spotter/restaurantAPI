@@ -33,3 +33,11 @@ class OrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         db_table = 'orders'
+
+
+class OrderItemSerializer(serializers.ModelSerializer):
+    model = OrderItem
+    fields = ['id', 'order', 'menuitem', 'quantity', 'price']
+
+    class Meta:
+        db_table = 'order_items'
