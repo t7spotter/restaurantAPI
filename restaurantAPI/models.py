@@ -6,6 +6,11 @@ class Category(models.Model):
     slug = models.SlugField()
     title = models.CharField(max_length=255, db_index=True)
 
+    class Meta:
+        db_table = 'categories'
+        verbose_name = 'category'
+        verbose_name_plural = 'categories'
+
     def __str__(self):
         return self.title
 
@@ -15,6 +20,11 @@ class MenuItem(models.Model):
     price = models.DecimalField(max_digits=6, decimal_places=2, db_index=True)
     featured = models.BooleanField(db_index=True)
     category = models.ForeignKey(Category, on_delete=models.PROTECT)
+
+    class Meta:
+        db_table = 'menu_items'
+        verbose_name = 'menu_item'
+        verbose_name_plural = 'menu_items'
 
     def __str__(self):
         return self.title
@@ -29,6 +39,9 @@ class Cart(models.Model):
 
     class Meta:
         unique_together = ('menuitem', 'user')
+        db_table = 'carts'
+        verbose_name = 'cart'
+        verbose_name_plural = 'carts'
 
 
 class Order(models.Model):
@@ -38,6 +51,11 @@ class Order(models.Model):
     status = models.BooleanField(default=0, db_index=True)
     total = models.DecimalField(max_digits=6, decimal_places=2, default=0)
     date = models.DateField(db_index=True)
+
+    class Meta:
+        db_table = 'orders'
+        verbose_name = 'order'
+        verbose_name_plural = 'orders'
 
 
 class OrderItem(models.Model):
@@ -49,3 +67,6 @@ class OrderItem(models.Model):
 
     class Meta:
         unique_together = ('order', 'menuitem')
+        db_table = 'order_items'
+        verbose_name = 'order_item'
+        verbose_name_plural = 'order_items'
