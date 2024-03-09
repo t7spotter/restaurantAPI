@@ -17,3 +17,11 @@ class MenuItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         db_table = 'menu_items'
+
+
+class CartSerializer(serializers.ModelSerializer):
+    model = Cart
+    fields = ['id', 'user', 'menuitem', 'quantity', 'unit_price', 'price']
+
+    class Meta:
+        db_table = 'carts'
