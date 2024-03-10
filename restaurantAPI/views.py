@@ -49,7 +49,7 @@ class ListMenuItems(APIView):
             return Response({"message": "You have not permission for this action"}, status=status.HTTP_403_FORBIDDEN)
 
     def delete(self, request: Request, pk):
-        if request.user.groups.filter(name='manager').exists():  # only manger group members can use post method
+        if request.user.groups.filter(name='manager').exists():  # only manger group members can use delete method
             try:
                 queryset = get_object_or_404(MenuItem, pk=pk)
             except MenuItem.DoesNotExist:
