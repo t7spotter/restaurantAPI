@@ -23,3 +23,13 @@ class ListMenuItems(APIView):
             queryset = MenuItem.objects.all()
             ser = MenuItemSerializer(queryset, many=True)
             return Response(ser.data, status=status.HTTP_200_OK)
+
+    def post(self, request: Request):
+        if request.user.groups.filter(name='manager').exists():     # only manger group members can use post method
+            ser = MenuItemSerializer(data=request.data)
+            if ser.is_valid():
+                return Response(ser.data, status.HTTP_201_CREATED)
+            else:
+                return Response(ser.errors, status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({"message": "You have not permission for this action"}, status=status.HTTP_403_FORBIDDEN)
