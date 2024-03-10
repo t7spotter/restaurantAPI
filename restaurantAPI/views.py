@@ -28,6 +28,7 @@ class ListMenuItems(APIView):
         if request.user.groups.filter(name='manager').exists():  # only manger group members can use post method
             ser = MenuItemSerializer(data=request.data)
             if ser.is_valid():
+                ser.save()
                 return Response(ser.data, status.HTTP_201_CREATED)
             else:
                 return Response(ser.errors, status.HTTP_400_BAD_REQUEST)
@@ -43,6 +44,18 @@ class ListMenuItems(APIView):
                 return Response({"message": "This menu item does not exists"}, status=status.HTTP_400_BAD_REQUEST)
             if ser.is_valid():
                 ser.save()
-                return Response(ser.data, status=status.HTTP_200_OK)
+                return Response([{"message": f"{queryset.title} updated"}, ser.data], status=status.HTTP_200_OK)
+        else:
+            return Response({"message": "You have not permission for this action"}, status=status.HTTP_403_FORBIDDEN)
+
+    def delete(self, request: Request, pk):
+        if request.user.groups.filter(name='manager').exists():  # only manger group members can use post method
+            try:
+                queryset = get_object_or_404(MenuItem, pk=pk)
+            except MenuItem.DoesNotExist:
+                return Response({"message": "This menu item does not exists"}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                queryset.delete()
+                return Response({"message": f"{queryset.title} Deleted"}, status=status.HTTP_204_NO_CONTENT)
         else:
             return Response({"message": "You have not permission for this action"}, status=status.HTTP_403_FORBIDDEN)
