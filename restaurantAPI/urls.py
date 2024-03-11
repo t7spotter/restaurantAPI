@@ -11,4 +11,5 @@ urlpatterns = [
     path('groups/manager/users/<int:pk>', ManagerGroupManagement.as_view()),
 
     path('/api/groups/delivery-crew/users', DeliveryGroupManagement.as_view()),
+    path('/api/groups/delivery-crew/users/<int:pk>', DeliveryGroupManagement.as_view()),
 ]

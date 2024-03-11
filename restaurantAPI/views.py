@@ -121,3 +121,10 @@ class DeliveryGroupManagement(APIView):
 
         user.groups.add(delivery_crews)
         return Response({"message": f"'{user}' added to the delivery group"}, status=status.HTTP_201_CREATED)
+
+    def delete(self, request: Request, pk):
+        user = get_object_or_404(User, pk=pk)
+        managers = get_object_or_404(Group, name='delivery')
+
+        user.groups.remove(managers)
+        return Response({"message": f"'{user}' deleted from the delivery group"}, status=status.HTTP_204_NO_CONTENT)
