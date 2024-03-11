@@ -8,7 +8,7 @@ from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
 
 from .models import MenuItem
-from .serializers import MenuItemSerializer, UserSerializer, GroupSerializer
+from .serializers import MenuItemSerializer, UserSerializer
 from .permissions import IsManager
 
 
@@ -50,7 +50,7 @@ class ListMenuItems(APIView):
                 return Response({"message": "This menu item does not exists"}, status=status.HTTP_400_BAD_REQUEST)
             if ser.is_valid():
                 ser.save()
-                return Response([{"message": f"{queryset.title} updated"}, ser.data], status=status.HTTP_200_OK)
+                return Response([{"message": f"'{queryset.title}' updated"}, ser.data], status=status.HTTP_200_OK)
         else:
             return Response({"message": "You have not permission for this action"}, status=status.HTTP_403_FORBIDDEN)
 
@@ -62,7 +62,7 @@ class ListMenuItems(APIView):
                 return Response({"message": "This menu item does not exist"}, status=status.HTTP_400_BAD_REQUEST)
             else:
                 queryset.delete()
-                return Response({"message": f"{queryset.title} Deleted"}, status=status.HTTP_204_NO_CONTENT)
+                return Response({"message": f"'{queryset.title}' Deleted"}, status=status.HTTP_204_NO_CONTENT)
         else:
             return Response({"message": "You have not permission for this action"},
                             status=status.HTTP_403_FORBIDDEN)
@@ -89,4 +89,11 @@ class ManagerGroupManagement(APIView):
         managers = get_object_or_404(Group, name='manager')
 
         user.groups.add(managers)
-        return Response({"message": f"{user} added to the manager group"}, status=status.HTTP_201_CREATED)
+        return Response({"message": f"'{user}' added to the manager group"}, status=status.HTTP_201_CREATED)
+
+    def delete(self, request: Request, pk):
+        user = get_object_or_404(User, pk=pk)
+        managers = get_object_or_404(Group, name='manager')
+
+        user.groups.remove(managers)
+        return Response({"message": f"'{user}' deleted from the manager group"}, status=status.HTTP_204_NO_CONTENT)
