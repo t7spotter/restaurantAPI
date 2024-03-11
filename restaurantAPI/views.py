@@ -8,7 +8,7 @@ from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
 
 from .models import MenuItem
-from .serializers import MenuItemSerializer, UserSerializer
+from .serializers import MenuItemSerializer, UserSerializer, GroupSerializer
 from .permissions import IsManager
 
 
@@ -59,7 +59,7 @@ class ListMenuItems(APIView):
             try:
                 queryset = get_object_or_404(MenuItem, pk=pk)
             except MenuItem.DoesNotExist:
-                return Response({"message": "This menu item does not exists"}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"message": "This menu item does not exist"}, status=status.HTTP_400_BAD_REQUEST)
             else:
                 queryset.delete()
                 return Response({"message": f"{queryset.title} Deleted"}, status=status.HTTP_204_NO_CONTENT)
@@ -71,10 +71,18 @@ class ListMenuItems(APIView):
 class ManagerGroupManagement(APIView):
     permission_classes = [IsManager]
 
-    def get(self, request: Request):
-        queryset = User.objects.filter(groups__name='manager')
-        ser = UserSerializer(queryset, many=True)
-        return Response(ser.data, status=status.HTTP_200_OK)
+    def get(self, request: Request, pk=None):
+        if pk:
+            try:
+                queryset = User.objects.filter(groups__name='manager').get(pk=pk)
+                ser = UserSerializer(queryset)
+                return Response(ser.data, status=status.HTTP_200_OK)
+            except User.DoesNotExist:
+                return Response({"message": "This manager user does not exist"}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            queryset = User.objects.filter(groups__name='manager')
+            ser = UserSerializer(queryset, many=True)
+            return Response(ser.data, status=status.HTTP_200_OK)
 
     def post(self, request: Request):
         user = get_object_or_404(User, username=request.data.get('username'))
