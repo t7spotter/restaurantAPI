@@ -114,3 +114,10 @@ class DeliveryGroupManagement(APIView):
             queryset = User.objects.filter(groups__name='delivery')
             ser = UserSerializer(queryset, many=True)
             return Response(ser.data, status=status.HTTP_200_OK)
+
+    def post(self, request: Request):
+        user = get_object_or_404(User, username=request.data.get('username'))
+        delivery_crews = get_object_or_404(Group, name='delivery')
+
+        user.groups.add(delivery_crews)
+        return Response({"message": f"'{user}' added to the delivery group"}, status=status.HTTP_201_CREATED)
