@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -7,7 +8,8 @@ from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
 
 from .models import MenuItem
-from .serializers import MenuItemSerializer
+from .serializers import MenuItemSerializer, UserSerializer
+from .permissions import IsManager
 
 
 class ListMenuItems(APIView):
@@ -64,3 +66,12 @@ class ListMenuItems(APIView):
         else:
             return Response({"message": "You have not permission for this action"},
                             status=status.HTTP_403_FORBIDDEN)
+
+
+class ManagerGroupManagement(APIView):
+    permission_classes = [IsManager]
+
+    def get(self, request: Request):
+        queryset = User.objects.filter(groups__name='manager')
+        ser = UserSerializer(queryset, many=True)
+        return Response(ser.data, status=status.HTTP_200_OK)
