@@ -97,3 +97,20 @@ class ManagerGroupManagement(APIView):
 
         user.groups.remove(managers)
         return Response({"message": f"'{user}' deleted from the manager group"}, status=status.HTTP_204_NO_CONTENT)
+
+
+class DeliveryGroupManagement(APIView):
+    permission_classes = [IsManager]
+
+    def get(self, request: Request, pk=None):
+        if pk:
+            try:
+                queryset = User.objects.filter(groups__name='delivery').get(pk=pk)
+                ser = UserSerializer(queryset)
+                return Response(ser.data, status=status.HTTP_200_OK)
+            except User.DoesNotExist:
+                return Response({"message": "This delivery user does not exist"}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            queryset = User.objects.filter(groups__name='delivery')
+            ser = UserSerializer(queryset, many=True)
+            return Response(ser.data, status=status.HTTP_200_OK)
