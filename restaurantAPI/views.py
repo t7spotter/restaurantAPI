@@ -24,7 +24,11 @@ class ListMenuItems(APIView):
             ser = MenuItemSerializer(queryset, many=True)
             return Response(ser.data, status=status.HTTP_200_OK)
 
-    def post(self, request: Request):
+    def post(self, request: Request, pk=None):
+        if pk:
+            return Response({"message": "The post method has not to get pk argument"},
+                            status=status.HTTP_400_BAD_REQUEST)
+
         if request.user.groups.filter(name='manager').exists():  # only manger group members can use post method
             ser = MenuItemSerializer(data=request.data)
             if ser.is_valid():
@@ -58,4 +62,5 @@ class ListMenuItems(APIView):
                 queryset.delete()
                 return Response({"message": f"{queryset.title} Deleted"}, status=status.HTTP_204_NO_CONTENT)
         else:
-            return Response({"message": "You have not permission for this action"}, status=status.HTTP_403_FORBIDDEN)
+            return Response({"message": "You have not permission for this action"},
+                            status=status.HTTP_403_FORBIDDEN)
