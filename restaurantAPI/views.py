@@ -142,3 +142,41 @@ class UserCartManager(APIView):
             queryset = Cart.objects.filter(user=request.user)
             ser = CartSerializer(queryset, many=True)
             return Response(ser.data, status=status.HTTP_200_OK)
+
+    def post(self, request: Request):
+        if request.user.groups.filter(name='customer').exists():
+            user = request.user
+
+            try:
+                menuitem_id = request.data['menuitem']
+                quantity = request.data['quantity']
+            except:
+                return Response(
+                    [{"message": "please send valid data"}, {"menuitem": "menuitem id", "quantity": "int: how many?"}],
+                    status=status.HTTP_400_BAD_REQUEST)
+
+            try:
+                menuitem = get_object_or_404(MenuItem, pk=menuitem_id)
+            except MenuItem.DoesNotExist:
+                return Response({'error': 'Menu item not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+            unit_price = menuitem.price
+
+            price = quantity * unit_price
+
+            cart_data = {
+                "user": user.id,
+                "menuitem": menuitem.id,
+                "quantity": quantity,
+                "unit_price": unit_price,
+                "price": price
+            }
+
+            ser = CartSerializer(data=cart_data)
+            if ser.is_valid():
+                ser.save()
+                return Response(ser.data, status=status.HTTP_201_CREATED)
+            else:
+                return Response(ser.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({'error': 'User is not in the "customer" group.'}, status=status.HTTP_403_FORBIDDEN)
