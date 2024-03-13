@@ -7,8 +7,8 @@ from rest_framework import status
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
 
-from .models import MenuItem
-from .serializers import MenuItemSerializer, UserSerializer
+from .models import MenuItem, Cart
+from .serializers import MenuItemSerializer, UserSerializer, CartSerializer
 from .permissions import IsManager
 
 
@@ -128,3 +128,17 @@ class DeliveryGroupManagement(APIView):
 
         user.groups.remove(managers)
         return Response({"message": f"'{user}' deleted from the delivery group"}, status=status.HTTP_204_NO_CONTENT)
+
+
+class UserCartManager(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request):
+        if request.user.groups.filter(name='manager').exists():
+            queryset = Cart.objects.all()
+            ser = CartSerializer(queryset, many=True)
+            return Response(ser.data, status=status.HTTP_200_OK)
+        else:
+            queryset = Cart.objects.filter(user=request.user)
+            ser = CartSerializer(queryset, many=True)
+            return Response(ser.data, status=status.HTTP_200_OK)
