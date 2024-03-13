@@ -12,4 +12,6 @@ urlpatterns = [
     path('groups/delivery-crew/users', DeliveryGroupManagement.as_view()),
     path('groups/delivery-crew/users/<int:pk>', DeliveryGroupManagement.as_view()),
 
+
+    path('cart/menu-items', UserCartManager.as_view()),
 ]
