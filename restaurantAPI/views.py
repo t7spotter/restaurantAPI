@@ -180,3 +180,9 @@ class UserCartManager(APIView):
                 return Response(ser.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({'error': 'User is not in the "customer" group.'}, status=status.HTTP_403_FORBIDDEN)
+
+    def delete(self, request):
+        if request.user.groups.filter(name="customer"):
+            queryset = Cart.objects.filter(user=request.user)
+            queryset.delete()
+            return Response({"messages": "Cart cleared"}, status=status.HTTP_204_NO_CONTENT)
