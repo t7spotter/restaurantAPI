@@ -4,7 +4,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework import status
-from rest_framework.authentication import SessionAuthentication
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication, TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 
 from .models import MenuItem, Cart
@@ -13,7 +13,7 @@ from .permissions import IsManager
 
 
 class ListMenuItems(APIView):
-    authentication_classes = [SessionAuthentication]
+    authentication_classes = [TokenAuthentication, BasicAuthentication, SessionAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request: Request, pk=None):
@@ -69,6 +69,7 @@ class ListMenuItems(APIView):
 
 
 class ManagerGroupManagement(APIView):
+    authentication_classes = [TokenAuthentication, BasicAuthentication, SessionAuthentication]
     permission_classes = [IsManager]
 
     def get(self, request: Request, pk=None):
@@ -100,6 +101,7 @@ class ManagerGroupManagement(APIView):
 
 
 class DeliveryGroupManagement(APIView):
+    authentication_classes = [TokenAuthentication, BasicAuthentication, SessionAuthentication]
     permission_classes = [IsManager]
 
     def get(self, request: Request, pk=None):
@@ -131,6 +133,7 @@ class DeliveryGroupManagement(APIView):
 
 
 class UserCartManager(APIView):
+    authentication_classes = [TokenAuthentication, BasicAuthentication, SessionAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request: Request):
@@ -181,7 +184,7 @@ class UserCartManager(APIView):
         else:
             return Response({'error': 'User is not in the "customer" group.'}, status=status.HTTP_403_FORBIDDEN)
 
-    def delete(self, request):
+    def delete(self, request):  # TODO: Add pk parameter
         if request.user.groups.filter(name="customer"):
             queryset = Cart.objects.filter(user=request.user)
             queryset.delete()
