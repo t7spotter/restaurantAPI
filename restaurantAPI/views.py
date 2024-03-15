@@ -152,7 +152,8 @@ class UserCartManager(APIView):
             queryset = Cart.objects.all()
             ser = CartSerializer(queryset, many=True)
             return Response(ser.data, status=status.HTTP_200_OK)
-        else:
+
+        elif request.user.groups.filter(name='customer').exists():
             queryset = Cart.objects.filter(user=request.user)
             ser = CartSerializer(queryset, many=True)
 
