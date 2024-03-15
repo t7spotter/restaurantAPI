@@ -144,7 +144,10 @@ class UserCartManager(APIView):
         else:
             queryset = Cart.objects.filter(user=request.user)
             ser = CartSerializer(queryset, many=True)
-            return Response(ser.data, status=status.HTTP_200_OK)
+
+            total_order_price = Cart.get_total_price(queryset)
+            return Response([{"items in your cart": ser.data}, {"total order price": total_order_price}],
+                            status=status.HTTP_200_OK)
 
     def post(self, request: Request):
         if request.user.groups.filter(name='customer').exists():
@@ -189,21 +192,3 @@ class UserCartManager(APIView):
             queryset = Cart.objects.filter(user=request.user)
             queryset.delete()
             return Response({"messages": "Cart cleared"}, status=status.HTTP_204_NO_CONTENT)
-
-
-class OrderManagement(APIView):
-    authentication_classes = [TokenAuthentication, BasicAuthentication, SessionAuthentication]
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request: Request):
-        if request.user.groups.filter(name='customer').exists():
-            user_cart = Cart.objects.filter(user=request.user)
-
-            total_order_price = 0
-            for item in user_cart:
-                total_order_price += item.price
-
-            return Response({"total order price": total_order_price}, status=status.HTTP_200_OK)
-
-        else:
-            return Response({'error': 'User is not in the "customer" group.'}, status=status.HTTP_403_FORBIDDEN)
