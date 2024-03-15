@@ -16,7 +16,8 @@ class ListMenuItems(APIView):
     authentication_classes = [TokenAuthentication, BasicAuthentication, SessionAuthentication]
     permission_classes = [IsAuthenticated]
 
-    def get(self, request: Request, pk=None):
+    @staticmethod
+    def get(request: Request, pk=None):
         if pk:
             queryset = get_object_or_404(MenuItem, pk=pk)
             ser = MenuItemSerializer(queryset)
@@ -26,7 +27,8 @@ class ListMenuItems(APIView):
             ser = MenuItemSerializer(queryset, many=True)
             return Response(ser.data, status=status.HTTP_200_OK)
 
-    def post(self, request: Request, pk=None):
+    @staticmethod
+    def post(request: Request, pk=None):
         if pk:
             return Response({"message": "The post method has not to get pk argument"},
                             status=status.HTTP_400_BAD_REQUEST)
@@ -41,7 +43,8 @@ class ListMenuItems(APIView):
         else:
             return Response({"message": "You have not permission for this action"}, status=status.HTTP_403_FORBIDDEN)
 
-    def put(self, request: Request, pk):
+    @staticmethod
+    def put(request: Request, pk):
         if request.user.groups.filter(name='manager').exists():  # only manger group members can use put method
             try:
                 queryset = get_object_or_404(MenuItem, pk=pk)
@@ -54,7 +57,8 @@ class ListMenuItems(APIView):
         else:
             return Response({"message": "You have not permission for this action"}, status=status.HTTP_403_FORBIDDEN)
 
-    def delete(self, request: Request, pk):
+    @staticmethod
+    def delete(request: Request, pk):
         if request.user.groups.filter(name='manager').exists():  # only manger group members can use delete method
             try:
                 queryset = get_object_or_404(MenuItem, pk=pk)
@@ -72,7 +76,8 @@ class ManagerGroupManagement(APIView):
     authentication_classes = [TokenAuthentication, BasicAuthentication, SessionAuthentication]
     permission_classes = [IsManager]
 
-    def get(self, request: Request, pk=None):
+    @staticmethod
+    def get(request: Request, pk=None):
         if pk:
             try:
                 queryset = User.objects.filter(groups__name='manager').get(pk=pk)
@@ -85,14 +90,16 @@ class ManagerGroupManagement(APIView):
             ser = UserSerializer(queryset, many=True)
             return Response(ser.data, status=status.HTTP_200_OK)
 
-    def post(self, request: Request):
+    @staticmethod
+    def post(request: Request):
         user = get_object_or_404(User, username=request.data.get('username'))
         managers = get_object_or_404(Group, name='manager')
 
         user.groups.add(managers)
         return Response({"message": f"'{user}' added to the manager group"}, status=status.HTTP_201_CREATED)
 
-    def delete(self, request: Request, pk):
+    @staticmethod
+    def delete(request: Request, pk):
         user = get_object_or_404(User, pk=pk)
         managers = get_object_or_404(Group, name='manager')
 
@@ -104,7 +111,8 @@ class DeliveryGroupManagement(APIView):
     authentication_classes = [TokenAuthentication, BasicAuthentication, SessionAuthentication]
     permission_classes = [IsManager]
 
-    def get(self, request: Request, pk=None):
+    @staticmethod
+    def get(request: Request, pk=None):
         if pk:
             try:
                 queryset = User.objects.filter(groups__name='delivery').get(pk=pk)
@@ -117,14 +125,16 @@ class DeliveryGroupManagement(APIView):
             ser = UserSerializer(queryset, many=True)
             return Response(ser.data, status=status.HTTP_200_OK)
 
-    def post(self, request: Request):
+    @staticmethod
+    def post(request: Request):
         user = get_object_or_404(User, username=request.data.get('username'))
         delivery_crews = get_object_or_404(Group, name='delivery')
 
         user.groups.add(delivery_crews)
         return Response({"message": f"'{user}' added to the delivery group"}, status=status.HTTP_201_CREATED)
 
-    def delete(self, request: Request, pk):
+    @staticmethod
+    def delete(request: Request, pk):
         user = get_object_or_404(User, pk=pk)
         managers = get_object_or_404(Group, name='delivery')
 
@@ -136,7 +146,8 @@ class UserCartManager(APIView):
     authentication_classes = [TokenAuthentication, BasicAuthentication, SessionAuthentication]
     permission_classes = [IsAuthenticated]
 
-    def get(self, request: Request):
+    @staticmethod
+    def get(request: Request):
         if request.user.groups.filter(name='manager').exists():
             queryset = Cart.objects.all()
             ser = CartSerializer(queryset, many=True)
@@ -149,14 +160,15 @@ class UserCartManager(APIView):
             return Response([{"items in your cart": ser.data}, {"total order price": total_order_price}],
                             status=status.HTTP_200_OK)
 
-    def post(self, request: Request):
+    @staticmethod
+    def post(request: Request):
         if request.user.groups.filter(name='customer').exists():
             user = request.user
 
             try:
                 menuitem_id = request.data['menuitem']
                 quantity = request.data['quantity']
-            except:
+            except KeyError:
                 return Response(
                     [{"message": "please send valid data"}, {"menuitem": "menuitem id", "quantity": "int: how many?"}],
                     status=status.HTTP_400_BAD_REQUEST)
@@ -187,7 +199,8 @@ class UserCartManager(APIView):
         else:
             return Response({'error': 'User is not in the "customer" group.'}, status=status.HTTP_403_FORBIDDEN)
 
-    def delete(self, request):  # TODO: Add pk parameter
+    @staticmethod
+    def delete(request):  # TODO: Add pk parameter
         if request.user.groups.filter(name="customer"):
             queryset = Cart.objects.filter(user=request.user)
             queryset.delete()
