@@ -138,7 +138,7 @@ class UserCartManager(APIView):
 
     def get(self, request: Request):
         if request.user.groups.filter(name='manager').exists():
-            queryset = Cart.objects.all()
+            queryset = Cart.objects.order_by('user').all()
             ser = CartSerializer(queryset, many=True)
 
             # --------------------------------------------------------------------------------------------------
