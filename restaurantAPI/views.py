@@ -168,8 +168,6 @@ class UserCartManager(APIView):
 
     def post(self, request: Request):
         if request.user.groups.filter(name='customer').exists():
-            user = request.user
-
             try:
                 menuitem_id = request.data['menuitem']
                 quantity = request.data['quantity']
@@ -177,30 +175,40 @@ class UserCartManager(APIView):
                 return Response(
                     [{"message": "please send valid data"}, {"menuitem": "menuitem id", "quantity": "int: how many?"}],
                     status=status.HTTP_400_BAD_REQUEST)
-
             try:
-                menuitem = get_object_or_404(MenuItem, pk=menuitem_id)
-            except MenuItem.DoesNotExist:
+                menu_item = get_object_or_404(MenuItem, pk=menuitem_id)
+            except (MenuItem.DoesNotExist, ValueError):
                 return Response({'error': 'Menu item not found.'}, status=status.HTTP_404_NOT_FOUND)
 
-            unit_price = menuitem.price
+            user_cart = Cart.objects.filter(user=request.user)
+            if user_cart.filter(menuitem=menuitem_id).count() != 0:
+                get_menu_item_in_current_cart = get_object_or_404(Cart, user=request.user, menuitem=menuitem_id)
+                get_menu_item_in_current_cart.quantity += quantity
+                new_quantity_price = quantity * menu_item.price
+                get_menu_item_in_current_cart.price += new_quantity_price
+                get_menu_item_in_current_cart.save()
 
-            price = quantity * unit_price
+                ser = CartSerializer(get_menu_item_in_current_cart)
+                return Response({"message": "ok", "item": ser.data}, status=status.HTTP_200_OK)
 
-            cart_data = {
-                "user": user.id,
-                "menuitem": menuitem.id,
-                "quantity": quantity,
-                "unit_price": unit_price,
-                "price": price
-            }
+            elif user_cart.filter(menuitem=menuitem_id).count() == 0:
+                unit_price = menu_item.price
+                price = quantity * unit_price
 
-            ser = CartSerializer(data=cart_data)
-            if ser.is_valid():
-                ser.save()
-                return Response(ser.data, status=status.HTTP_201_CREATED)
-            else:
-                return Response(ser.errors, status=status.HTTP_400_BAD_REQUEST)
+                cart_data = {
+                    "user": request.user.id,
+                    "menuitem": menu_item.id,
+                    "quantity": quantity,
+                    "unit_price": unit_price,
+                    "price": price
+                }
+
+                ser = CartSerializer(data=cart_data)
+                if ser.is_valid():
+                    ser.save()
+                    return Response(ser.data, status=status.HTTP_201_CREATED)
+                else:
+                    return Response(ser.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({'error': 'User is not in the "customer" group.'}, status=status.HTTP_403_FORBIDDEN)
 
