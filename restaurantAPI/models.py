@@ -44,7 +44,7 @@ class Cart(models.Model):
     #     return total_order_price
 
     class Meta:
-        unique_together = ('menuitem', 'user')
+        # unique_together = ('menuitem', 'user')
         db_table = 'carts'
         verbose_name = 'cart'
         verbose_name_plural = 'carts'
