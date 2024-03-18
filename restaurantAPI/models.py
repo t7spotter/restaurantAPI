@@ -73,7 +73,7 @@ class OrderItem(models.Model):
     price = models.DecimalField(max_digits=6, decimal_places=2)
 
     class Meta:
-        # unique_together = ('order', 'menuitem')
+        unique_together = ('order', 'menuitem')
         db_table = 'order_items'
         verbose_name = 'order_item'
         verbose_name_plural = 'order_items'
