@@ -1,5 +1,7 @@
+import random
 from django.contrib.auth.models import User, Group
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.request import Request
@@ -7,8 +9,8 @@ from rest_framework import status
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication, TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 
-from .models import MenuItem, Cart
-from .serializers import MenuItemSerializer, UserSerializer, CartSerializer
+from .models import MenuItem, Cart, OrderItem
+from .serializers import MenuItemSerializer, UserSerializer, CartSerializer, OrderSerializer
 from .permissions import IsManager
 
 
@@ -223,3 +225,46 @@ class UserCartManager(APIView):
         for item in items:
             total_order_price += item.price
         return total_order_price
+
+
+class OrderManagement(APIView):
+    authentication_classes = [TokenAuthentication, BasicAuthentication, SessionAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        cart_items = Cart.objects.filter(user=request.user).count()
+        if cart_items == 0:
+            return Response({"messages": "No items in your cart"}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            user_cart = Cart.objects.filter(user=request.user)
+            total_cart_price = Cart.get_total_price(user_cart)
+
+            delivery = User.objects.filter(groups__name='delivery', is_active=True)
+            random_delivery = random.choice(delivery).id
+
+            order_data = {
+                "user": request.user.id,
+                "delivery_crew": random_delivery,
+                "status": False,
+                "total": total_cart_price,
+                "date": timezone.now().date(),
+            }
+
+            ser = OrderSerializer(data=order_data)
+            if ser.is_valid():
+                order = ser.save()
+
+                for item in user_cart:
+                    order_item = OrderItem(
+                        order=order,
+                        menuitem_id=item.menuitem_id,
+                        quantity=item.quantity,
+                        price=item.price
+                    )
+                    order_item.save()
+
+                user_cart.delete()
+
+                return Response(ser.data, status=status.HTTP_200_OK)
+            else:
+                return Response(ser.errors, status=status.HTTP_400_BAD_REQUEST)
