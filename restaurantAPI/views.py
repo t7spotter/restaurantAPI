@@ -9,9 +9,9 @@ from rest_framework import status
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication, TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 
-from .models import MenuItem, Cart, OrderItem
+from .models import MenuItem, Cart, OrderItem, Order
 from .serializers import MenuItemSerializer, UserSerializer, CartSerializer, OrderSerializer
-from .permissions import IsManager
+from .permissions import IsManager, IsDeliveryCrew
 
 
 class ListMenuItems(APIView):
@@ -268,3 +268,18 @@ class OrderManagement(APIView):
                 return Response(ser.data, status=status.HTTP_200_OK)
             else:
                 return Response(ser.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class OrderDeliveryStatusManagement(APIView):
+    authentication_classes = [TokenAuthentication, BasicAuthentication, SessionAuthentication]
+    permission_classes = [IsDeliveryCrew]
+
+    def get(self, request: Request, pk=None):
+        if pk:
+            order = get_object_or_404(Order, delivery_crew__username=request.user.username, pk=pk)
+            ser = OrderSerializer(order)
+            return Response(ser.data, status=status.HTTP_200_OK)
+        elif not pk:
+            orders = Order.objects.filter(delivery_crew__username=request.user.username)
+            ser = OrderSerializer(orders, many=True)
+            return Response(ser.data, status=status.HTTP_200_OK)
