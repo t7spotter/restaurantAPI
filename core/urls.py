@@ -23,6 +23,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api-auth/', include('rest_framework.urls')),  # browsable API login and logout
     path('token/', views.obtain_auth_token),  # access token endpoint
+    path('auth/', include('djoser.urls')),
 
     path('api/', include('restaurantAPI.urls')),
 ]
