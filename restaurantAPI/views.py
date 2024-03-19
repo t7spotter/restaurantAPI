@@ -214,7 +214,7 @@ class UserCartManager(APIView):
         else:
             return Response({'error': 'User is not in the "customer" group.'}, status=status.HTTP_403_FORBIDDEN)
 
-    def delete(self, request):  # TODO: Add pk parameter
+    def delete(self, request: Request):  # TODO: Add pk parameter
         if request.user.groups.filter(name="customer"):
             queryset = Cart.objects.filter(user=request.user)
             queryset.delete()
@@ -231,7 +231,7 @@ class OrderManagement(APIView):
     authentication_classes = [TokenAuthentication, BasicAuthentication, SessionAuthentication]
     permission_classes = [IsAuthenticated]
 
-    def post(self, request):
+    def post(self, request: Request):
         cart_items = Cart.objects.filter(user=request.user).count()
         if cart_items == 0:
             return Response({"messages": "No items in your cart"}, status=status.HTTP_400_BAD_REQUEST)
@@ -283,3 +283,13 @@ class OrderDeliveryStatusManagement(APIView):
             orders = Order.objects.filter(delivery_crew__username=request.user.username)
             ser = OrderSerializer(orders, many=True)
             return Response(ser.data, status=status.HTTP_200_OK)
+
+    def post(self, request: Request, pk):
+        if request.user.groups.filter(name='delivery'):
+            if pk:
+                order = get_object_or_404(Order, delivery_crew__username=request.user.username, pk=pk)
+                order.status = True
+                order.save()
+                ser = OrderSerializer(order)
+                return Response({"order": ser.data, "message": "order delivered successfully"},
+                                status=status.HTTP_200_OK)
