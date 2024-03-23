@@ -1,5 +1,5 @@
 import random
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import Group
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework.views import APIView
@@ -9,6 +9,7 @@ from rest_framework import status
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication, TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 
+from auths.users.models import User
 from .models import MenuItem, Cart, OrderItem, Order
 from .serializers import MenuItemSerializer, UserSerializer, CartSerializer, OrderSerializer
 from .permissions import IsManager, IsDeliveryCrew
