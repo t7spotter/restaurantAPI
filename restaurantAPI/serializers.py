@@ -1,6 +1,7 @@
-from django.contrib.auth.models import User
+
 from rest_framework import serializers
 
+from auths.users.models import User
 from .models import Category, MenuItem, Cart, Order, OrderItem
 
 
@@ -37,4 +38,11 @@ class OrderItemSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username', 'email']
+        fields = ['id',
+                  'username',
+                  'email',
+                  'is_staff',
+                  'is_active',
+                  'is_superuser',
+                  'groups',
+                  ]
