@@ -33,16 +33,16 @@ class ListMenuItems(APIView):
         if pk:
             return Response({"message": "The post method has not to get pk argument"},
                             status=status.HTTP_400_BAD_REQUEST)
-
-        if request.user.groups.filter(name='manager').exists():  # only manger group members can use post method
-            ser = MenuItemSerializer(data=request.data)
-            if ser.is_valid():
-                ser.save()
-                return Response(ser.data, status.HTTP_201_CREATED)
-            else:
-                return Response(ser.errors, status.HTTP_400_BAD_REQUEST)
         else:
-            return Response({"message": "You have not permission for this action"}, status=status.HTTP_403_FORBIDDEN)
+            if request.user.groups.filter(name='manager').exists():  # only manger group members can use post method
+                ser = MenuItemSerializer(data=request.data)
+                if ser.is_valid():
+                    ser.save()
+                    return Response(ser.data, status.HTTP_201_CREATED)
+                else:
+                    return Response(ser.errors, status.HTTP_400_BAD_REQUEST)
+            else:
+                return Response({"message": "You have not permission for this action"}, status=status.HTTP_403_FORBIDDEN)
 
     def put(self, request: Request, pk):
         if request.user.groups.filter(name='manager').exists():  # only manger group members can use put method
