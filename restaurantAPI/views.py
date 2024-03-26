@@ -45,6 +45,19 @@ class ListCategory(APIView):
                 return Response({"message": "You have not permission for this action"},
                                 status=status.HTTP_403_FORBIDDEN)
 
+    def put(self, request: Request, pk):
+        if request.user.groups.filter(name='manager').exists():  # only manager group members can use put method
+            try:
+                queryset = get_object_or_404(Category, pk=pk)
+                ser = CategorySerializer(queryset, data=request.data)
+            except Category.DoesNotExist:
+                return Response({"message": "This menu item does not exists"}, status=status.HTTP_400_BAD_REQUEST)
+            if ser.is_valid():
+                ser.save()
+                return Response([{"message": f"'{queryset.title}' updated"}, ser.data], status=status.HTTP_200_OK)
+        else:
+            return Response({"message": "You have not permission for this action"}, status=status.HTTP_403_FORBIDDEN)
+
 
 class ListMenuItems(APIView):
     authentication_classes = [TokenAuthentication, BasicAuthentication, SessionAuthentication]
