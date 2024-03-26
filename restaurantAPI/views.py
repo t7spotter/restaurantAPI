@@ -10,9 +10,24 @@ from rest_framework.authentication import SessionAuthentication, BasicAuthentica
 from rest_framework.permissions import IsAuthenticated
 
 from auths.users.models import User
-from .models import MenuItem, Cart, OrderItem, Order
-from .serializers import MenuItemSerializer, UserSerializer, CartSerializer, OrderSerializer
+from .models import MenuItem, Cart, OrderItem, Order, Category
+from .serializers import MenuItemSerializer, UserSerializer, CartSerializer, OrderSerializer, CategorySerializer
 from .permissions import IsManager, IsDeliveryCrew
+
+
+class ListCategory(APIView):
+    authentication_classes = [TokenAuthentication, BasicAuthentication, SessionAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request, pk=None):
+        if pk:
+            queryset = get_object_or_404(Category, pk=pk)
+            ser = CategorySerializer(queryset)
+            return Response(ser.data, status=status.HTTP_200_OK)
+        elif not pk:
+            queryset = Category.objects.all()
+            ser = CategorySerializer(queryset, many=True)
+            return Response(ser.data, status=status.HTTP_200_OK)
 
 
 class ListMenuItems(APIView):
@@ -42,7 +57,8 @@ class ListMenuItems(APIView):
                 else:
                     return Response(ser.errors, status.HTTP_400_BAD_REQUEST)
             else:
-                return Response({"message": "You have not permission for this action"}, status=status.HTTP_403_FORBIDDEN)
+                return Response({"message": "You have not permission for this action"},
+                                status=status.HTTP_403_FORBIDDEN)
 
     def put(self, request: Request, pk):
         if request.user.groups.filter(name='manager').exists():  # only manger group members can use put method
