@@ -58,6 +58,19 @@ class ListCategory(APIView):
         else:
             return Response({"message": "You have not permission for this action"}, status=status.HTTP_403_FORBIDDEN)
 
+    def delete(self, request: Request, pk):
+        if request.user.groups.filter(name='manager').exists():   # only manager group members can use delete method
+            try:
+                queryset = get_object_or_404(Category, pk=pk)
+            except Category.DoesNotExist:
+                return Response({"message": "This menu item does not exist"}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                queryset.delete()
+                return Response({"message": f"'{queryset.title}' Deleted"}, status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response({"message": "You have not permission for this action"},
+                            status=status.HTTP_403_FORBIDDEN)
+
 
 class ListMenuItems(APIView):
     authentication_classes = [TokenAuthentication, BasicAuthentication, SessionAuthentication]
