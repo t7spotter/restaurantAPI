@@ -201,8 +201,9 @@ class UserCartManager(APIView):
     def get(self, request: Request):
         if request.user.groups.filter(name='manager').exists():
             queryset = Cart.objects.order_by('user').all()
+            each_user_cart = queryset.values('user').annotate(total_price=Sum('price'))
             ser = CartSerializer(queryset, many=True)
-            return Response(ser.data, status=status.HTTP_200_OK)
+            return Response([ser.data, each_user_cart], status=status.HTTP_200_OK)
 
         elif request.user.groups.filter(name='customer').exists():
             queryset = Cart.objects.filter(user=request.user)
