@@ -1,5 +1,6 @@
 import random
 from django.contrib.auth.models import Group
+from django.db.models import Sum, Count
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework.views import APIView
@@ -201,30 +202,19 @@ class UserCartManager(APIView):
         if request.user.groups.filter(name='manager').exists():
             queryset = Cart.objects.order_by('user').all()
             ser = CartSerializer(queryset, many=True)
-
-            # --------------------------------------------------------------------------------------------------
-            # all_items_in_single_cart = set(user.user_id for user in queryset)
-            # carts_by_each_user = [Cart.objects.filter(user=cart) for cart in all_items_in_single_cart]
-
-            # for cart in carts_by_each_user:
-            #     user_total_cart_price = 0
-            #     ii = []
-            #     for item in cart:
-            #         user_total_cart_price += item.price
-            #         ii.append(float(user_total_cart_price))
-            #
-            # listt = [ser.data[4]['price']]
-            # print(listt)
-            # print(dir(ser.data))
-            # -------------------------------------------------------------------------------------------------
             return Response(ser.data, status=status.HTTP_200_OK)
 
         elif request.user.groups.filter(name='customer').exists():
             queryset = Cart.objects.filter(user=request.user)
             ser = CartSerializer(queryset, many=True)
 
-            total_order_price = self.get_total_price(queryset)
-            return Response([{"items in your cart": ser.data}, {"total order price": total_order_price}],
+            total_items = queryset.aggregate(
+                total_price=Sum("price"),
+                number_of_items=Count("id"),
+                total_quantity=Sum("quantity")
+            )
+
+            return Response([{"items in your cart": ser.data}, {"total order": total_items}],
                             status=status.HTTP_200_OK)
 
     def post(self, request: Request):
@@ -279,11 +269,11 @@ class UserCartManager(APIView):
             queryset.delete()
             return Response({"messages": "Cart cleared"}, status=status.HTTP_204_NO_CONTENT)
 
-    def get_total_price(self, items):
-        total_order_price = 0
-        for item in items:
-            total_order_price += item.price
-        return total_order_price
+    # def get_total_price(self, items):
+    #     total_order_price = 0
+    #     for item in items:
+    #         total_order_price += item.price
+    #     return total_order_price
 
 
 class OrderManagement(APIView):
