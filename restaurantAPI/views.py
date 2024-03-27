@@ -318,8 +318,7 @@ class OrderManagement(APIView):
             return Response({"messages": "No items in your cart"}, status=status.HTTP_400_BAD_REQUEST)
         else:
             user_cart = Cart.objects.filter(user=request.user)
-            total_cart_price = Cart.get_total_price(user_cart)
-
+            total_cart_price = user_cart.aggregate(total_price=Sum("price"))['total_price']
             delivery = User.objects.filter(groups__name='delivery', is_active=True)
             random_delivery = random.choice(delivery).id
 
