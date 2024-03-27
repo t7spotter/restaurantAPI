@@ -60,7 +60,7 @@ class ListCategory(APIView):
             return Response({"message": "You have not permission for this action"}, status=status.HTTP_403_FORBIDDEN)
 
     def delete(self, request: Request, pk):
-        if request.user.groups.filter(name='manager').exists():   # only manager group members can use delete method
+        if request.user.groups.filter(name='manager').exists():  # only manager group members can use delete method
             try:
                 queryset = get_object_or_404(Category, pk=pk)
             except Category.DoesNotExist:
@@ -290,6 +290,27 @@ class UserCartManager(APIView):
 class OrderManagement(APIView):
     authentication_classes = [TokenAuthentication, BasicAuthentication, SessionAuthentication]
     permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request, pk=None):
+        if request.user.groups.filter(name='manager'):
+            if pk:
+                queryset = get_object_or_404(Order, pk=pk)
+                ser = OrderSerializer(queryset)
+                return Response(ser.data, status=status.HTTP_200_OK)
+            elif not pk:
+                queryset = Order.objects.order_by('date', 'user').all()
+                ser = OrderSerializer(queryset, many=True)
+                return Response(ser.data, status=status.HTTP_200_OK)
+
+        elif request.user.groups.filter(name='customer'):
+            if pk:
+                queryset = get_object_or_404(Order, pk=pk, user=request.user)
+                ser = OrderSerializer(queryset)
+                return Response(ser.data, status=status.HTTP_200_OK)
+            elif not pk:
+                queryset = Order.objects.filter(user=request.user).order_by('date')
+                ser = OrderSerializer(queryset, many=True)
+                return Response(ser.data, status=status.HTTP_200_OK)
 
     def post(self, request: Request):
         cart_items = Cart.objects.filter(user=request.user).count()

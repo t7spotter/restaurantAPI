@@ -23,7 +23,7 @@ urlpatterns = [
 
 
     path('orders', OrderManagement.as_view()),
-
+    path('orders/<int:pk>', OrderManagement.as_view()),
 
     path('delivery', OrderDeliveryStatusManagement.as_view()),
     path('delivery/<int:pk>', OrderDeliveryStatusManagement.as_view()),
