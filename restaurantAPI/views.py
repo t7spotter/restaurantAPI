@@ -319,7 +319,7 @@ class OrderManagement(APIView):
         else:
             user_cart = Cart.objects.filter(user=request.user)
             total_cart_price = user_cart.aggregate(total_price=Sum("price"))['total_price']
-            delivery = User.objects.filter(groups__name='delivery', is_active=True)
+            delivery = User.objects.filter(groups__name='delivery', is_active=True, ready_to_work=True)
             random_delivery = random.choice(delivery).id
 
             order_data = {
