@@ -198,12 +198,22 @@ class UserCartManager(APIView):
     authentication_classes = [TokenAuthentication, BasicAuthentication, SessionAuthentication]
     permission_classes = [IsAuthenticated]
 
-    def get(self, request: Request):
+    def get(self, request: Request, pk=None):
         if request.user.groups.filter(name='manager').exists():
-            queryset = Cart.objects.order_by('user').all()
-            each_user_cart = queryset.values('user').annotate(total_price=Sum('price'))
-            ser = CartSerializer(queryset, many=True)
-            return Response([ser.data, each_user_cart], status=status.HTTP_200_OK)
+            if pk:
+                queryset = Cart.objects.filter(user__id=pk)
+                user_total_cart_info = queryset.aggregate(
+                    total_price=Sum("price"),
+                    number_of_items=Count("id"),
+                    total_quantity=Sum("quantity")
+                )
+                ser = CartSerializer(queryset, many=True)
+                return Response([ser.data, user_total_cart_info], status=status.HTTP_200_OK)
+            elif not pk:
+                queryset = Cart.objects.order_by('user').all()
+                each_user_cart = queryset.values('user').annotate(total_price=Sum('price'))
+                ser = CartSerializer(queryset, many=True)
+                return Response([ser.data, each_user_cart], status=status.HTTP_200_OK)
 
         elif request.user.groups.filter(name='customer').exists():
             queryset = Cart.objects.filter(user=request.user)

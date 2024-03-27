@@ -19,6 +19,9 @@ urlpatterns = [
 
 
     path('cart/menu-items', UserCartManager.as_view()),
+    path('cart/menu-items/<int:pk>', UserCartManager.as_view()),
+
+
     path('orders', OrderManagement.as_view()),
 
 
