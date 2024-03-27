@@ -373,3 +373,21 @@ class OrderDeliveryStatusManagement(APIView):
                 ser = OrderSerializer(order)
                 return Response({"order": ser.data, "message": "order delivered successfully"},
                                 status=status.HTTP_200_OK)
+
+
+class DeliveryCrewReadyToWorkStatusManagement(APIView):
+    authentication_classes = [TokenAuthentication, BasicAuthentication, SessionAuthentication]
+    permission_classes = [IsDeliveryCrew]
+
+    def post(self, request: Request):
+        queryset = get_object_or_404(User, username=request.user.username)
+        if queryset.ready_to_work is True:
+            queryset.ready_to_work = False
+            queryset.save()
+            ser = UserSerializer(queryset)
+            return Response({"ready_to_work": ser.data["ready_to_work"]}, status=status.HTTP_200_OK)
+        elif queryset.ready_to_work is False:
+            queryset.ready_to_work = True
+            queryset.save()
+            ser = UserSerializer(queryset)
+            return Response({"ready_to_work": ser.data["ready_to_work"]}, status=status.HTTP_200_OK)
