@@ -47,7 +47,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     )
     date_joined = models.DateTimeField(_("date joined"), default=timezone.now)
 
-    ready_to_work = models.BooleanField(_("ready to work"), default=False)
+    ready_to_work = models.BooleanField(_("ready to work"), default=None, null=True, blank=True)
 
     objects = UserManager()
 
