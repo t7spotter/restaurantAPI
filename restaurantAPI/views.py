@@ -152,6 +152,10 @@ class ManagerGroupManagement(APIView):
         managers = get_object_or_404(Group, name='manager')
 
         user.groups.add(managers)
+
+        user.is_staff = True  # manager group users must be staff
+        user.save()
+
         return Response({"message": f"'{user}' added to the manager group"}, status=status.HTTP_201_CREATED)
 
     def delete(self, request: Request, pk):
