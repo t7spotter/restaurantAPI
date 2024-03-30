@@ -45,4 +45,5 @@ class UserSerializer(serializers.ModelSerializer):
                   'is_active',
                   'is_superuser',
                   'groups',
+                  'ready_to_work'
                   ]
