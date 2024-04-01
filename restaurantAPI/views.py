@@ -435,3 +435,15 @@ class OrderDeliveryCrewChanger(APIView):
             elif not alternative_delivery_crew.ready_to_work:
                 return Response({'error': 'This delivery crew is not ready to work, please choose another crew.'},
                                 status=status.HTTP_404_NOT_FOUND)
+
+
+class DeliveredOrders(APIView):
+    def get(self, request: Request, pk=None):
+        if pk:
+            queryset = get_object_or_404(Order, status=True, pk=pk)
+            ser = OrderSerializer(queryset)
+            return Response(ser.data, status=status.HTTP_200_OK)
+        else:
+            queryset = Order.objects.filter(status=True).order_by('date')
+            ser = OrderSerializer(queryset, many=True)
+            return Response(ser.data, status=status.HTTP_200_OK)

@@ -1,7 +1,8 @@
 from django.urls import path
 
-from .views import ListMenuItems, ManagerGroupManagement, DeliveryGroupManagement, UserCartManager, OrderManagement, OrderDeliveryStatusManagement, ListCategory, DeliveryCrewReadyToWorkStatusManagement, OrderDeliveryCrewChanger
-
+from .views import ListMenuItems, ManagerGroupManagement, DeliveryGroupManagement, UserCartManager, OrderManagement, \
+    OrderDeliveryStatusManagement, ListCategory, DeliveryCrewReadyToWorkStatusManagement, OrderDeliveryCrewChanger, \
+    DeliveredOrders
 
 urlpatterns = [
     path('menu-items', ListMenuItems.as_view()),
@@ -34,5 +35,8 @@ urlpatterns = [
 
     path('undelivered', OrderDeliveryCrewChanger.as_view()),
     path('undelivered/<int:pk>', OrderDeliveryCrewChanger.as_view()),
+
+    path('delivered', DeliveredOrders.as_view()),
+    path('delivered/<int:pk>', DeliveredOrders.as_view()),
 
 ]
