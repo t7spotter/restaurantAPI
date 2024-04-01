@@ -438,6 +438,9 @@ class OrderDeliveryCrewChanger(APIView):
 
 
 class DeliveredOrders(APIView):
+    authentication_classes = [TokenAuthentication, BasicAuthentication, SessionAuthentication]
+    permission_classes = [IsManager]
+
     def get(self, request: Request, pk=None):
         if pk:
             queryset = get_object_or_404(Order, status=True, pk=pk)
