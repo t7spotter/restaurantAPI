@@ -410,3 +410,26 @@ class OrderDeliveryCrewChanger(APIView):
             queryset = Order.objects.filter(status=False).order_by('date')
             ser = OrderSerializer(queryset, many=True)
             return Response(ser.data, status=status.HTTP_200_OK)
+
+    def post(self, request: Request, pk):
+        if not pk:
+            return Response({"message": "You should specify the pk"}, status=status.HTTP_400_BAD_REQUEST)
+        elif pk:
+            try:
+                delivery_crew_id = request.data['delivery_crew']
+            except KeyError:
+                return Response({"error": "Please sent a valid delivery crew ID"}, status=status.HTTP_400_BAD_REQUEST)
+
+            alternative_delivery_crew = get_object_or_404(User, groups__name='delivery', pk=delivery_crew_id)
+
+            if alternative_delivery_crew.ready_to_work:
+                order = get_object_or_404(Order, pk=pk)
+                order.delivery_crew = alternative_delivery_crew
+                order.save()
+                ser = OrderSerializer(order)
+                return Response([{"message": f"Order {order.id} assigned to {alternative_delivery_crew.username}"},
+                                 {"order": ser.data}], status=status.HTTP_200_OK)
+
+            elif not alternative_delivery_crew.ready_to_work:
+                return Response({'error': 'This delivery crew is not ready to work, please choose another crew.'},
+                                status=status.HTTP_404_NOT_FOUND)
