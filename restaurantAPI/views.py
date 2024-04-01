@@ -401,7 +401,12 @@ class OrderDeliveryCrewChanger(APIView):
     authentication_classes = [TokenAuthentication, BasicAuthentication, SessionAuthentication]
     permission_classes = [IsManager]
 
-    def get(self, request: Request):
-        queryset = Order.objects.filter(status=False).order_by('date')
-        ser = OrderSerializer(queryset, many=True)
-        return Response(ser.data, status=status.HTTP_200_OK)
+    def get(self, request: Request, pk=None):
+        if pk:
+            queryset = get_object_or_404(Order, status=False, pk=pk)
+            ser = OrderSerializer(queryset)
+            return Response(ser.data, status=status.HTTP_200_OK)
+        elif not pk:
+            queryset = Order.objects.filter(status=False).order_by('date')
+            ser = OrderSerializer(queryset, many=True)
+            return Response(ser.data, status=status.HTTP_200_OK)

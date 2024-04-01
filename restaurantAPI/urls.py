@@ -33,5 +33,6 @@ urlpatterns = [
 
 
     path('undelivered', OrderDeliveryCrewChanger.as_view()),
+    path('undelivered/<int:pk>', OrderDeliveryCrewChanger.as_view()),
 
 ]
