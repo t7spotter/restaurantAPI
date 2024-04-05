@@ -170,3 +170,4 @@ cython_debug/
 # PyCharm
 .idea/
 
+.restaurantAPI/migrations/0001_
