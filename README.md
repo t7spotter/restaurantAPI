@@ -248,8 +248,9 @@ The request body should include two required fields:
 new users who register on the platform are automatically assigned the 'customer' role through a signal. This simplifies the onboarding process, ensuring that all new users have access to basic functionalities upon registration.
 
 
-
 ## And much more capabilities!
+
+
 ## Contributing
 
 Feel free to contribute to this project by submitting pull requests or reporting issues.
