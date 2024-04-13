@@ -463,3 +463,15 @@ class MenuItemAvailability(APIView):
         menuitem = get_object_or_404(MenuItem, pk=pk)
         return Response({"message": f"{menuitem.title} availability status is: {menuitem.featured}"},
                         status=status.HTTP_200_OK)
+
+    def post(self, request: Request, pk):
+        menuitem = get_object_or_404(MenuItem, pk=pk)
+
+        if menuitem.featured:
+            menuitem.featured = False
+        elif not menuitem.featured:
+            menuitem.featured = True
+        menuitem.save()
+
+        return Response({"message": f"{menuitem.title} availability changed to: {menuitem.featured}"},
+                        status=status.HTTP_200_OK)
