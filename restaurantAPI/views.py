@@ -453,3 +453,13 @@ class DeliveredOrders(APIView):
             queryset = Order.objects.filter(status=True).order_by('date')
             ser = OrderSerializer(queryset, many=True)
             return Response(ser.data, status=status.HTTP_200_OK)
+
+
+class MenuItemAvailability(APIView):
+    authentication_classes = [TokenAuthentication, BasicAuthentication, SessionAuthentication]
+    permission_classes = [IsManager]
+
+    def get(self, request: Request, pk):
+        menuitem = get_object_or_404(MenuItem, pk=pk)
+        return Response({"message": f"{menuitem.title} availability status is: {menuitem.featured}"},
+                        status=status.HTTP_200_OK)
