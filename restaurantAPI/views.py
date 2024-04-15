@@ -1,7 +1,7 @@
 import random
 from django.contrib.auth.models import Group
 from django.db.models import Sum, Count
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from django.utils import timezone
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -459,19 +459,34 @@ class MenuItemAvailability(APIView):
     authentication_classes = [TokenAuthentication, BasicAuthentication, SessionAuthentication]
     permission_classes = [IsManager]
 
-    def get(self, request: Request, pk):
-        menuitem = get_object_or_404(MenuItem, pk=pk)
-        return Response({"message": f"{menuitem.title} availability status is: {menuitem.featured}"},
-                        status=status.HTTP_200_OK)
+    def get(self, request: Request, pk=None):
+        if pk:
+            menuitem = get_object_or_404(MenuItem, pk=pk)
+            return Response({"message": f"{menuitem.title} availability status is: {menuitem.featured}"},
+                            status=status.HTTP_200_OK)
+        elif not pk:
+            return Response({
+                'message': 'please use menuitem id in url or post menuitem name in this format: {"menuitem": "menuitem title"}'})
 
-    def post(self, request: Request, pk):
-        menuitem = get_object_or_404(MenuItem, pk=pk)
+    def post(self, request: Request, pk=None):  # TODO: add "if not pk: ... then menuitem = request.data['menuitem']"
+        if pk:
+            menuitem = get_object_or_404(MenuItem, pk=pk)
+        elif 'menuitem' in request.data:
+            target_menuitem = request.data['menuitem']
+            menuitem = get_object_or_404(MenuItem, title=target_menuitem)
+        else:
+            return Response({"error": "Missing 'menuitem' parameter"}, status=status.HTTP_400_BAD_REQUEST)
 
         if menuitem.featured:
             menuitem.featured = False
         elif not menuitem.featured:
             menuitem.featured = True
         menuitem.save()
-
-        return Response({"message": f"{menuitem.title} availability changed to: {menuitem.featured}"},
-                        status=status.HTTP_200_OK)
+        # redirect(f"http://localhost:8000/api/menuitemstatus/{menuitem.id}")
+        print(request.path_info)
+        if request.path_info == f"/api/menuitemstatus/{menuitem.id}":
+            return_value = Response({"message": f"{menuitem.title} availability changed to: {menuitem.featured}"},
+                                    status=status.HTTP_200_OK)
+        else:
+            return_value = redirect(f"/api/menuitemstatus/{menuitem.id}")
+        return return_value

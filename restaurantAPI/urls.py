@@ -40,5 +40,6 @@ urlpatterns = [
     path('delivered/<int:pk>', DeliveredOrders.as_view()),
 
 
+    path('menuitemstatus', MenuItemAvailability.as_view()),
     path('menuitemstatus/<int:pk>', MenuItemAvailability.as_view()),
 ]
