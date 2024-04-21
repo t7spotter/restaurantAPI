@@ -29,7 +29,7 @@ Navigate to restaurantAPI folder:
 cd restaurantAPI
 ```
 
-And run the project, you can use Docker with docker-compose up.
+And run the project, you can use Docker with docker-compose up to create new container with this app.
 
 ```bash
 docker-compose up --build
