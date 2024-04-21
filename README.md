@@ -32,7 +32,7 @@ cd restaurantAPI
 And run the project, you can use Docker with docker-compose up.
 
 ```bash
-docker-compose up
+docker-compose up --build
 ```
 
 ## API Endpoints
