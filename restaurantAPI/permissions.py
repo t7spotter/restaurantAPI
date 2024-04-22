@@ -11,3 +11,8 @@ class IsDeliveryCrew(BasePermission):
 
     def has_permission(self, request, view):
         return bool(request.user and request.user.groups.filter(name='delivery'))
+
+
+class IsCustomer(BasePermission):
+    def has_permission(self, request, view):
+        return bool(request.user and request.user.groups.filter(name='customer'))
