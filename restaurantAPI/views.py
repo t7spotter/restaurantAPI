@@ -13,7 +13,7 @@ from rest_framework.permissions import IsAuthenticated
 from auths.users.models import User
 from .models import MenuItem, Cart, OrderItem, Order, Category
 from .serializers import MenuItemSerializer, UserSerializer, CartSerializer, OrderSerializer, CategorySerializer
-from .permissions import IsManager, IsDeliveryCrew
+from .permissions import IsManager, IsDeliveryCrew, IsCustomer
 
 
 class ListCategory(APIView):
@@ -490,3 +490,18 @@ class MenuItemAvailability(APIView):
             return_value = redirect(f"/api/menuitemstatus/{menuitem.id}")
 
         return return_value
+
+
+class UserOrdersHistory(APIView):
+    authentication_classes = [TokenAuthentication, BasicAuthentication, SessionAuthentication]
+    permission_classes = [IsCustomer]
+
+    def get(self, request: Request, pk=None):
+        if pk:
+            order = get_object_or_404(Order, user=request.user, pk=pk)
+            ser = OrderSerializer(order)
+            return Response(ser.data, status=status.HTTP_200_OK)
+        elif not pk:
+            orders = Order.objects.filter(user=request.user).order_by('date')
+            ser = OrderSerializer(orders, many=True)
+            return Response(ser.data, status=status.HTTP_200_OK)
