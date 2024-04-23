@@ -1,3 +1,4 @@
+import datetime
 import random
 from django.contrib.auth.models import Group
 from django.db.models import Sum, Count
@@ -375,10 +376,17 @@ class OrderDeliveryStatusManagement(APIView):
         if request.user.groups.filter(name='delivery'):
             if pk:
                 order = get_object_or_404(Order, delivery_crew__username=request.user.username, pk=pk)
-                order.status = True
-                order.save()
+
+                if order.delivered_time is None and order.status is False:
+                    order.status = True
+                    now_time = str(datetime.datetime.now())[:-7]
+                    order.delivered_time = now_time
+                    order.save()
+                else:
+                    return Response({"message": f"Order number {order.id} has already been delivered"})
+
                 ser = OrderSerializer(order)
-                return Response({"order": ser.data, "message": "order delivered successfully"},
+                return Response({"order": ser.data, "message": f"Order number {order.id} delivered successfully"},
                                 status=status.HTTP_200_OK)
 
 
