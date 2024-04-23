@@ -85,7 +85,7 @@ class ListMenuItems(APIView):
             ser = MenuItemSerializer(queryset)
             return Response(ser.data, status=status.HTTP_200_OK)
         else:
-            queryset = MenuItem.objects.all()
+            queryset = MenuItem.objects.all().select_related('category').order_by('category')
             ser = MenuItemSerializer(queryset, many=True)
             return Response(ser.data, status=status.HTTP_200_OK)
 
