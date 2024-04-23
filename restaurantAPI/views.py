@@ -508,8 +508,10 @@ class UserOrdersHistory(APIView):
     def get(self, request: Request, pk=None):
         if pk:
             order_items = OrderItem.objects.filter(order=pk).order_by('-price')
+            order_items_total_price = order_items.aggregate(total_price=Sum("price"))
+            print(UserOrdersHistory)
             ser = OrderItemSerializer(order_items, many=True)
-            return Response(ser.data, status=status.HTTP_200_OK)
+            return Response([ser.data, order_items_total_price], status=status.HTTP_200_OK)
         elif not pk:
             orders = Order.objects.filter(user=request.user).order_by('date')
             ser = OrderSerializer(orders, many=True)
