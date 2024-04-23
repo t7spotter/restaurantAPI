@@ -1,4 +1,3 @@
-
 from rest_framework import serializers
 
 from auths.users.models import User
@@ -12,9 +11,11 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class MenuItemSerializer(serializers.ModelSerializer):
+    category_title = serializers.CharField(source='category.title', read_only=True)
+
     class Meta:
         model = MenuItem
-        fields = ['id', 'title', 'price', 'featured', 'category']
+        fields = ['id', 'title', 'price', 'featured', 'category_title']
 
 
 class CartSerializer(serializers.ModelSerializer):
