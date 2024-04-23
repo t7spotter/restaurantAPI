@@ -13,7 +13,8 @@ from rest_framework.permissions import IsAuthenticated
 
 from auths.users.models import User
 from .models import MenuItem, Cart, OrderItem, Order, Category
-from .serializers import MenuItemSerializer, UserSerializer, CartSerializer, OrderSerializer, CategorySerializer
+from .serializers import MenuItemSerializer, UserSerializer, CartSerializer, OrderSerializer, CategorySerializer, \
+    OrderItemSerializer
 from .permissions import IsManager, IsDeliveryCrew, IsCustomer
 
 
@@ -506,8 +507,8 @@ class UserOrdersHistory(APIView):
 
     def get(self, request: Request, pk=None):
         if pk:
-            order = get_object_or_404(Order, user=request.user, pk=pk)
-            ser = OrderSerializer(order)
+            order_items = OrderItem.objects.filter(order=pk).order_by('-price')
+            ser = OrderItemSerializer(order_items, many=True)
             return Response(ser.data, status=status.HTTP_200_OK)
         elif not pk:
             orders = Order.objects.filter(user=request.user).order_by('date')
