@@ -52,6 +52,7 @@ class Order(models.Model):
     status = models.BooleanField(default=0, db_index=True)
     total = models.DecimalField(max_digits=6, decimal_places=2, default=0)
     date = models.DateField(db_index=True)
+    delivered_time = models.DateTimeField(null=True, blank=True, default=None)
 
     class Meta:
         db_table = 'orders'
