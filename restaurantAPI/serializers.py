@@ -19,9 +19,20 @@ class MenuItemSerializer(serializers.ModelSerializer):
 
 
 class CartSerializer(serializers.ModelSerializer):
+    menuitem_title = serializers.CharField(source='menuitem.title', read_only=True)
+    menuitem_category = serializers.CharField(source='menuitem.category', read_only=True)
+
     class Meta:
         model = Cart
-        fields = ['id', 'user', 'menuitem', 'quantity', 'unit_price', 'price']
+        fields = ['id',
+                  'user',
+                  'menuitem',
+                  'menuitem_title',
+                  'menuitem_category',
+                  'quantity',
+                  'unit_price',
+                  'price'
+                  ]
 
 
 class OrderSerializer(serializers.ModelSerializer):
