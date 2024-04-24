@@ -79,32 +79,38 @@ class ListMenuItems(APIView):
     authentication_classes = [TokenAuthentication, BasicAuthentication, SessionAuthentication]
     permission_classes = [IsAuthenticated]
 
-    def get(self, request: Request, pk=None):
+    def get_queryset(self, pk=None):
         if pk:
             queryset = get_object_or_404(MenuItem, pk=pk)
+        else:
+            queryset = MenuItem.objects.all().select_related('category')
+
+        search = self.request.query_params.get('search', None)
+        category = self.request.query_params.get('category', None)
+        to_price = self.request.query_params.get('to_price', None)
+        from_price = self.request.query_params.get('from_price', None)
+        featured_items = self.request.query_params.get('featured', None)
+
+        if search:
+            queryset = queryset.filter(title__icontains=search)
+        if category:
+            queryset = queryset.filter(category__title__icontains=category)
+        if to_price:
+            queryset = queryset.filter(price__lte=float(to_price))
+        if from_price:
+            queryset = queryset.filter(price__gte=float(from_price))
+        if featured_items:
+            queryset = queryset.filter(featured=True)
+
+        return queryset
+
+    def get(self, request: Request, pk=None):
+        if pk:
+            queryset = self.get_queryset(pk=pk)
             ser = MenuItemSerializer(queryset)
             return Response(ser.data, status=status.HTTP_200_OK)
         else:
-            queryset = MenuItem.objects.all().select_related('category') \
-                .order_by('category').order_by('-featured')
-
-            search = request.query_params.get('search', None)
-            category = request.query_params.get('category', None)
-            to_price = request.query_params.get('to_price', None)
-            from_price = request.query_params.get('from_price', None)
-            featured_items = request.query_params.get('featured', None)
-
-            if search:
-                queryset = queryset.filter(title__icontains=search)
-            if category:
-                queryset = queryset.filter(category__title__icontains=category)
-            if to_price:
-                queryset = queryset.filter(price__lte=to_price)
-            if from_price:
-                queryset = queryset.filter(price__gte=from_price)
-            if featured_items:
-                queryset = queryset.filter(featured=True)
-
+            queryset = self.get_queryset().order_by('-featured', 'category')
             ser = MenuItemSerializer(queryset, many=True)
             return Response(ser.data, status=status.HTTP_200_OK)
 
