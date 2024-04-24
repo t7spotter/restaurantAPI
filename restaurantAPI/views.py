@@ -89,8 +89,12 @@ class ListMenuItems(APIView):
                 .order_by('category').order_by('-featured')
 
             search = request.query_params.get('search', None)
+            category = request.query_params.get('category', None)
+
             if search:
                 queryset = queryset.filter(title__icontains=search)
+            if category:
+                queryset = queryset.filter(category__title__icontains=category)
 
             ser = MenuItemSerializer(queryset, many=True)
             return Response(ser.data, status=status.HTTP_200_OK)
