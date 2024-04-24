@@ -1,7 +1,7 @@
 import datetime
 import random
 from django.contrib.auth.models import Group
-from django.db.models import Sum, Count
+from django.db.models import Sum, Count, Q
 from django.shortcuts import get_object_or_404, redirect
 from django.utils import timezone
 from rest_framework.views import APIView
@@ -86,19 +86,26 @@ class ListMenuItems(APIView):
             queryset = MenuItem.objects.all().select_related('category')
 
         search = self.request.query_params.get('search', None)
-        category = self.request.query_params.get('category', None)
+        categories = self.request.query_params.getlist('category', [])
         to_price = self.request.query_params.get('to_price', None)
         from_price = self.request.query_params.get('from_price', None)
         featured_items = self.request.query_params.get('featured', None)
 
         if search:
             queryset = queryset.filter(title__icontains=search)
-        if category:
-            queryset = queryset.filter(category__title__icontains=category)
+
+        if categories:
+            category_query = Q()
+            for category in categories:
+                category_query = category_query | Q(category__title__icontains=category)
+            queryset = queryset.filter(category_query)
+
         if to_price:
             queryset = queryset.filter(price__lte=float(to_price))
+
         if from_price:
             queryset = queryset.filter(price__gte=float(from_price))
+
         if featured_items:
             queryset = queryset.filter(featured=True)
 
@@ -110,7 +117,7 @@ class ListMenuItems(APIView):
             ser = MenuItemSerializer(queryset)
             return Response(ser.data, status=status.HTTP_200_OK)
         else:
-            queryset = self.get_queryset().order_by('-featured', 'category')
+            queryset = self.get_queryset().order_by('-featured', 'category', 'price')
             ser = MenuItemSerializer(queryset, many=True)
             return Response(ser.data, status=status.HTTP_200_OK)
 
