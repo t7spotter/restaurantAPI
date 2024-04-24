@@ -92,6 +92,7 @@ class ListMenuItems(APIView):
             category = request.query_params.get('category', None)
             to_price = request.query_params.get('to_price', None)
             from_price = request.query_params.get('from_price', None)
+            featured_items = request.query_params.get('featured', None)
 
             if search:
                 queryset = queryset.filter(title__icontains=search)
@@ -101,6 +102,8 @@ class ListMenuItems(APIView):
                 queryset = queryset.filter(price__lte=to_price)
             if from_price:
                 queryset = queryset.filter(price__gte=from_price)
+            if featured_items:
+                queryset = queryset.filter(featured=True)
 
             ser = MenuItemSerializer(queryset, many=True)
             return Response(ser.data, status=status.HTTP_200_OK)
