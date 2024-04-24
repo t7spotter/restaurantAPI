@@ -90,11 +90,14 @@ class ListMenuItems(APIView):
 
             search = request.query_params.get('search', None)
             category = request.query_params.get('category', None)
+            to_price = request.query_params.get('to_price', None)
 
             if search:
                 queryset = queryset.filter(title__icontains=search)
             if category:
                 queryset = queryset.filter(category__title__icontains=category)
+            if to_price:
+                queryset = queryset.filter(price__lte=to_price)
 
             ser = MenuItemSerializer(queryset, many=True)
             return Response(ser.data, status=status.HTTP_200_OK)
