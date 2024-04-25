@@ -117,7 +117,7 @@ class ListMenuItems(APIView):
             ser = MenuItemSerializer(queryset)
             return Response(ser.data, status=status.HTTP_200_OK)
         else:
-            queryset = self.get_queryset().order_by('-featured', 'category', 'price')
+            queryset = self.get_queryset().order_by('category')
             ser = MenuItemSerializer(queryset, many=True)
             return Response(ser.data, status=status.HTTP_200_OK)
 
