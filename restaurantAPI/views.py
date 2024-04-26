@@ -15,7 +15,7 @@ from rest_framework.permissions import IsAuthenticated
 from auths.users.models import User
 from .models import MenuItem, Cart, OrderItem, Order, Category
 from .serializers import MenuItemSerializer, UserSerializer, CartSerializer, OrderSerializer, CategorySerializer, \
-    OrderItemSerializer
+    OrderItemSerializer, MenuItemAvailabilitySerializer
 from .permissions import IsManager, IsDeliveryCrew, IsCustomer
 
 
@@ -504,11 +504,29 @@ class MenuItemAvailability(APIView):
     def get(self, request: Request, pk=None):
         if pk:
             menuitem = get_object_or_404(MenuItem, pk=pk)
-            return Response({"message": f"{menuitem.title} {menuitem.category.title} availability status is: {menuitem.featured}"},
-                            status=status.HTTP_200_OK)
+            return Response(
+                {"message": f"{menuitem.title} {menuitem.category.title} availability status is: {menuitem.featured}"},
+                status=status.HTTP_200_OK)
         elif not pk:
-            return Response({
-                'message': 'please use menuitem id in url or post menuitem name in this format: {"menuitem": "menuitem title"}'})
+            featured = request.query_params.get('featured')
+
+            if featured:
+                if featured in ("True", "true"):
+                    queryset = MenuItem.objects.filter(featured=True).order_by('category')
+                    queryset_name = "Available Items"
+                elif featured in ("False", "false"):
+                    queryset = MenuItem.objects.filter(featured=False).order_by('category')
+                    queryset_name = "not-available Items"
+                else:
+                    queryset = MenuItem.objects.filter(featured=True).order_by('category')
+                    queryset_name = "Available Items"
+
+                ser = MenuItemAvailabilitySerializer(queryset, many=True)
+                return Response([queryset_name, ser.data], status=status.HTTP_200_OK)
+            else:
+                return Response({
+                    'message': 'please use menuitem id in url or post menuitem name in this format: {"menuitem": "menuitem title"} or use ?featured=true (or false) in url'},
+                    status=status.HTTP_400_BAD_REQUEST)
 
     def post(self, request: Request, pk=None):
         if pk:
@@ -526,8 +544,9 @@ class MenuItemAvailability(APIView):
         menuitem.save()
 
         if request.path_info == f"/api/menuitemstatus/{menuitem.id}":
-            return_value = Response({"message": f"{menuitem.title} {menuitem.category.title} availability changed to: {menuitem.featured}"},
-                                    status=status.HTTP_200_OK)
+            return_value = Response(
+                {"message": f"{menuitem.title} {menuitem.category.title} availability changed to: {menuitem.featured}"},
+                status=status.HTTP_200_OK)
         else:
             return_value = redirect(f"/api/menuitemstatus/{menuitem.id}")
 
