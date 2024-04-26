@@ -504,7 +504,7 @@ class MenuItemAvailability(APIView):
     def get(self, request: Request, pk=None):
         if pk:
             menuitem = get_object_or_404(MenuItem, pk=pk)
-            return Response({"message": f"{menuitem.title} availability status is: {menuitem.featured}"},
+            return Response({"message": f"{menuitem.title} {menuitem.category.title} availability status is: {menuitem.featured}"},
                             status=status.HTTP_200_OK)
         elif not pk:
             return Response({
@@ -526,7 +526,7 @@ class MenuItemAvailability(APIView):
         menuitem.save()
 
         if request.path_info == f"/api/menuitemstatus/{menuitem.id}":
-            return_value = Response({"message": f"{menuitem.title} availability changed to: {menuitem.featured}"},
+            return_value = Response({"message": f"{menuitem.title} {menuitem.category.title} availability changed to: {menuitem.featured}"},
                                     status=status.HTTP_200_OK)
         else:
             return_value = redirect(f"/api/menuitemstatus/{menuitem.id}")
