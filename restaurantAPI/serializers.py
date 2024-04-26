@@ -74,3 +74,14 @@ class UserSerializer(serializers.ModelSerializer):
                   'groups',
                   'ready_to_work'
                   ]
+
+
+class MenuItemAvailabilitySerializer(serializers.ModelSerializer):
+    _category_title = serializers.CharField(source='category.title', read_only=True)
+
+    class Meta:
+        model = MenuItem
+        fields = ['id',
+                  'title',
+                  '_category_title',
+                  ]
