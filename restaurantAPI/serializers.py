@@ -11,30 +11,30 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class MenuItemSerializer(serializers.ModelSerializer):
-    category_title = serializers.CharField(source='category.title', read_only=True)
+    _category_title = serializers.CharField(source='category.title', read_only=True)
 
     class Meta:
         model = MenuItem
         fields = ['id',
                   'title',
                   'category',
-                  'category_title',
+                  '_category_title',
                   'price',
                   'featured'
                   ]
 
 
 class CartSerializer(serializers.ModelSerializer):
-    menuitem_title = serializers.CharField(source='menuitem.title', read_only=True)
-    menuitem_category = serializers.CharField(source='menuitem.category', read_only=True)
+    _menuitem_title = serializers.CharField(source='menuitem.title', read_only=True)
+    _menuitem_category = serializers.CharField(source='menuitem.category', read_only=True)
 
     class Meta:
         model = Cart
         fields = ['id',
                   'user',
                   'menuitem',
-                  'menuitem_title',
-                  'menuitem_category',
+                  '_menuitem_title',
+                  '_menuitem_category',
                   'quantity',
                   'unit_price',
                   'price'
@@ -48,15 +48,15 @@ class OrderSerializer(serializers.ModelSerializer):
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
-    menuitem_title = serializers.CharField(source='menuitem.title', read_only=True)
-    menuitem_category = serializers.CharField(source='menuitem.category', read_only=True)
+    _menuitem_title = serializers.CharField(source='menuitem.title', read_only=True)
+    _menuitem_category = serializers.CharField(source='menuitem.category', read_only=True)
 
     class Meta:
         model = OrderItem
         fields = ['id',
                   'order',
-                  'menuitem_title',
-                  'menuitem_category',
+                  '_menuitem_title',
+                  '_menuitem_category',
                   'quantity',
                   'price'
                   ]
