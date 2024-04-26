@@ -515,7 +515,7 @@ class MenuItemAvailability(APIView):
             menuitem = get_object_or_404(MenuItem, pk=pk)
         elif 'menuitem' in request.data:
             target_menuitem = request.data['menuitem']
-            menuitem = get_object_or_404(MenuItem, title=target_menuitem)
+            menuitem = get_object_or_404(MenuItem, title__icontains=target_menuitem)
         else:
             return Response({"error": "Missing 'menuitem' parameter"}, status=status.HTTP_400_BAD_REQUEST)
 
