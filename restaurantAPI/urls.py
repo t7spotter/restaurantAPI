@@ -2,7 +2,7 @@ from django.urls import path
 
 from .views import ListMenuItems, ManagerGroupManagement, DeliveryGroupManagement, UserCartManager, OrderManagement, \
     OrderDeliveryStatusManagement, ListCategory, DeliveryCrewReadyToWorkStatusManagement, OrderDeliveryCrewChanger, \
-    DeliveredOrders, MenuItemAvailability, UserOrdersHistory
+    DeliveredOrders, MenuItemAvailability, UserOrdersHistory, MenuItemPriceAdjustment
 
 urlpatterns = [
     path('menu-items', ListMenuItems.as_view()),
@@ -46,4 +46,8 @@ urlpatterns = [
 
     path('orderhistory', UserOrdersHistory.as_view()),
     path('orderhistory/<int:pk>', UserOrdersHistory.as_view()),
+
+
+    path('price-change', MenuItemPriceAdjustment.as_view()),
+    path('price-change/<int:pk>', MenuItemPriceAdjustment.as_view()),
 ]

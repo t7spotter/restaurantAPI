@@ -117,7 +117,7 @@ class ListMenuItems(APIView):
             ser = MenuItemSerializer(queryset)
             return Response(ser.data, status=status.HTTP_200_OK)
         else:
-            queryset = self.get_queryset().order_by('category')
+            queryset = self.get_queryset().order_by('category', '-featured')
             ser = MenuItemSerializer(queryset, many=True)
             return Response(ser.data, status=status.HTTP_200_OK)
 
@@ -548,3 +548,18 @@ class UserOrdersHistory(APIView):
             orders = Order.objects.filter(user=request.user).order_by('date')
             ser = OrderSerializer(orders, many=True)
             return Response(ser.data, status=status.HTTP_200_OK)
+
+
+class MenuItemPriceAdjustment(APIView):
+    authentication_classes = [TokenAuthentication, BasicAuthentication, SessionAuthentication]
+    permission_classes = [IsManager]
+
+    def get(self, request: Request, pk=None):
+        if pk:
+            menuitem = get_object_or_404(MenuItem, pk=pk)
+            return Response({"message": f"The {menuitem.title} {menuitem.category.title} price is {menuitem.price}."},
+                            status=status.HTTP_200_OK)
+        elif not pk:
+            return Response({
+                'message': 'please use menuitem id in url or post menuitem name in this format: {"menuitem": "menuitem title"}'},
+                status=status.HTTP_400_BAD_REQUEST)
