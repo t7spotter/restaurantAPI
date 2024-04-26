@@ -1,6 +1,7 @@
 import datetime
 import random
 from django.contrib.auth.models import Group
+from django.db import IntegrityError
 from django.db.models import Sum, Count, Q
 from django.shortcuts import get_object_or_404, redirect
 from django.utils import timezone
@@ -140,7 +141,7 @@ class ListMenuItems(APIView):
     def put(self, request: Request, pk):
         if request.user.groups.filter(name='manager').exists():  # only manger group members can use put method
             try:
-                queryset = get_object_or_404(MenuItem, pk=pk)
+                queryset = self.get_queryset(pk=pk)
                 ser = MenuItemSerializer(queryset, data=request.data)
             except MenuItem.DoesNotExist:
                 return Response({"message": "This menu item does not exists"}, status=status.HTTP_400_BAD_REQUEST)
@@ -563,3 +564,29 @@ class MenuItemPriceAdjustment(APIView):
             return Response({
                 'message': 'please use menuitem id in url or post menuitem name in this format: {"menuitem": "menuitem title"}'},
                 status=status.HTTP_400_BAD_REQUEST)
+
+    def post(self, request: Request, pk=None):
+        if pk:
+            menuitem = get_object_or_404(MenuItem, pk=pk)
+        elif 'menuitem' in request.data:
+            target_menuitem = request.data.get('menuitem')
+            menuitem = get_object_or_404(MenuItem, title__icontains=target_menuitem)
+        else:
+            return Response({"error": "Missing 'menuitem' or 'pk' parameter"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            new_price = request.data.get('price')
+        except IntegrityError:
+            return Response({"error": "Missing 'price' parameter"}, status=status.HTTP_400_BAD_REQUEST)
+
+        menuitem.price = new_price
+        menuitem.save()
+
+        if request.path_info == f"/api/price-change/{menuitem.id}":
+            return_value = Response(
+                {"message": f"{menuitem.title} {menuitem.category.title} price changed to: {menuitem.price}"},
+                status=status.HTTP_200_OK)
+        else:
+            return_value = redirect(f"/api/price-change/{menuitem.id}")
+
+        return return_value
