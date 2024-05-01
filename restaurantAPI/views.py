@@ -626,3 +626,26 @@ class SaleReport(APIView):
 
         return Response({"message": f"Today ({today_str}) sale is {sales_price} for {sales_count} orders."},
                         status=status.HTTP_200_OK)
+
+    def post(self, request: Request):
+        today = str(timezone.now())[:-22]
+
+        start_date = request.data.get('start_date', today)
+        end_date = request.data.get('end_date', today)
+
+        sales = Order.objects.filter(date__range=[start_date, end_date])
+
+        sales_price = sales.aggregate(total_sale=Sum('total'))['total_sale']
+        sales_count = sales.count()
+
+        if start_date == end_date:
+            return_value, _status = {
+                "message": f"Your sale from {start_date} to {end_date} (Today) is {sales_price} for {sales_count} orders."}, status.HTTP_200_OK
+        elif start_date < end_date:
+            return_value, _status = {
+                "message": f"Your sale from {start_date} to {end_date} is {sales_price} for {sales_count} orders."}, status.HTTP_200_OK
+        else:
+            return_value, _status = {
+                "error": "Your start_date must be earlier than the end_date"}, status.HTTP_400_BAD_REQUEST
+
+        return Response(return_value, status=_status)
