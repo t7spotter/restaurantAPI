@@ -247,7 +247,44 @@ The request body should include two required fields:
 ```
 new users who register on the platform are automatically assigned the 'customer' role through a signal. This simplifies the onboarding process, ensuring that all new users have access to basic functionalities upon registration.
 
+## Sale Report API
 
+This API provides endpoints to retrieve sale reports based on specific dates.
+
+### Endpoints
+
+
+#### GET /sale
+
+Returns the sales report for today and amount of orders.
+
+- Response:
+```json
+{
+    "message": "Today (2024-05-01 13:35:02) sale is 137 for 7 orders."
+}
+```
+
+#### POST /sale
+
+- Body:
+```json
+{
+  "start_date": "2023-4-27",
+  "end_date": "2024-05-01"
+}
+
+```
+** If you omit the `end_date`, the API calculates the sales from the `start_date` to today.
+
+** If you omit both the `end_date` and `start_date`, the API calculates the sales for today only.~~~~
+
+- Response:
+```json
+{
+    "message": "Your sale from 2023-4-27 to 2024-05-01 is 2438 for 73 orders."
+}
+```
 ## And much more capabilities!
 
 
