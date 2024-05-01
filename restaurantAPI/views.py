@@ -609,3 +609,20 @@ class MenuItemPriceAdjustment(APIView):
             return_value = redirect(f"/api/price-change/{menuitem.id}")
 
         return return_value
+
+
+class SaleReport(APIView):
+    authentication_classes = [TokenAuthentication, BasicAuthentication, SessionAuthentication]
+    permission_classes = [IsManager]
+
+    def get(self, request: Request):
+        today = timezone.now()
+        today_str = str(today)[:-13]
+
+        sales = Order.objects.filter(date=today)
+
+        sales_price = sales.aggregate(total_sale=Sum('total'))['total_sale']
+        sales_count = sales.count()
+
+        return Response({"message": f"Today ({today_str}) sale is {sales_price} for {sales_count} orders."},
+                        status=status.HTTP_200_OK)
