@@ -640,7 +640,7 @@ class SaleReport(APIView):
 
         if start_date == end_date:
             return_value, _status = {
-                "message": f"Your sale from {start_date} to {end_date} (Today) is {sales_price} for {sales_count} orders."}, status.HTTP_200_OK
+                "message": f"Your sale from {start_date} to {end_date} (just today) is {sales_price} for {sales_count} orders."}, status.HTTP_200_OK
         elif start_date < end_date:
             return_value, _status = {
                 "message": f"Your sale from {start_date} to {end_date} is {sales_price} for {sales_count} orders."}, status.HTTP_200_OK
