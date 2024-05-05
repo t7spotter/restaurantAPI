@@ -1,6 +1,7 @@
 import datetime
 import random
 from django.contrib.auth.models import Group
+from django.contrib.contenttypes.models import ContentType
 from django.db import IntegrityError
 from django.db.models import Sum, Count, Q
 from django.shortcuts import get_object_or_404, redirect
@@ -13,6 +14,7 @@ from rest_framework.authentication import SessionAuthentication, BasicAuthentica
 from rest_framework.permissions import IsAuthenticated
 
 from auths.users.models import User
+from ratings.serializers import RateCreateSerializer
 from .models import MenuItem, Cart, OrderItem, Order, Category
 from .serializers import MenuItemSerializer, UserSerializer, CartSerializer, OrderSerializer, CategorySerializer, \
     OrderItemSerializer, MenuItemAvailabilitySerializer
@@ -649,3 +651,43 @@ class SaleReport(APIView):
                 "error": "Your start_date must be earlier than the end_date"}, status.HTTP_400_BAD_REQUEST
 
         return Response(return_value, status=_status)
+
+
+class MenuItemRatings(APIView):
+    authentication_classes = [TokenAuthentication, BasicAuthentication, SessionAuthentication]
+    permission_classes = [IsCustomer]
+
+    def get(self, request: Request, pk=None):
+        if pk:
+            queryset = get_object_or_404(MenuItem, pk=pk)
+            ser = MenuItemSerializer(queryset)
+            return Response(ser.data, status=status.HTTP_200_OK)
+        else:
+            queryset = MenuItem.objects.all()
+            ser = MenuItemSerializer(queryset, many=True)
+            return Response(ser.data, status=status.HTTP_200_OK)
+
+    def post(self, request: Request):
+        try:
+            user_rate = request.data['rate']
+            menu_item = request.data['menuitem']
+            menuitem = get_object_or_404(MenuItem, pk=menu_item).id
+        except (ValueError, KeyError):
+            return Response(
+                {"error": "'rate' and 'menuitem' fields are required. 'rate' must be an integer between 1 to 10 and 'menuitem' must be the ID of the menu item."},
+                status=status.HTTP_400_BAD_REQUEST)
+
+        content_type = ContentType.objects.get(app_label='restaurantAPI', model='menuitem').id
+
+        rate_data = {
+            "user": request.user.id,
+            "rate": user_rate,
+            "content_type": content_type,
+            "object_id": menuitem,
+        }
+        ser = RateCreateSerializer(data=rate_data)
+        if ser.is_valid():
+            ser.save()
+            return Response(ser.data, status.HTTP_201_CREATED)
+        else:
+            return Response(ser.errors, status=status.HTTP_400_BAD_REQUEST)
