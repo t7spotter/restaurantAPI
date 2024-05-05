@@ -1,3 +1,4 @@
+from django.db.models import Avg, Count
 from rest_framework import serializers
 
 from auths.users.models import User
@@ -12,6 +13,7 @@ class CategorySerializer(serializers.ModelSerializer):
 
 class MenuItemSerializer(serializers.ModelSerializer):
     _category_title = serializers.CharField(source='category.title', read_only=True)
+    rate = serializers.SerializerMethodField()
 
     class Meta:
         model = MenuItem
@@ -20,8 +22,16 @@ class MenuItemSerializer(serializers.ModelSerializer):
                   'category',
                   '_category_title',
                   'price',
-                  'featured'
+                  'featured',
+                  'rate'
                   ]
+
+    def get_rate(self, obj):
+        rate = obj.rate.aggregate(rate_count=Count('rate'), rate_average=Avg('rate'))
+        if rate:
+            return rate
+        else:
+            return 0
 
 
 class CartSerializer(serializers.ModelSerializer):
