@@ -1,6 +1,8 @@
 # from django.contrib.auth.models import User
+from django.contrib.contenttypes.fields import GenericRelation
 from django.db import models
 from auths.users.models import User
+from ratings.models import Rate
 
 
 class Category(models.Model):
@@ -21,6 +23,7 @@ class MenuItem(models.Model):
     price = models.DecimalField(max_digits=6, decimal_places=2, db_index=True)
     featured = models.BooleanField(db_index=True)
     category = models.ForeignKey(Category, on_delete=models.PROTECT)
+    rate = GenericRelation(Rate)
 
     class Meta:
         db_table = 'menu_items'
