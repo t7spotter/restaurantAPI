@@ -14,11 +14,12 @@ from rest_framework.authentication import SessionAuthentication, BasicAuthentica
 from rest_framework.permissions import IsAuthenticated
 
 from auths.users.models import User
+from ratings.models import Rate
 from ratings.serializers import RateCreateSerializer
 from .models import MenuItem, Cart, OrderItem, Order, Category
 from .serializers import MenuItemSerializer, UserSerializer, CartSerializer, OrderSerializer, CategorySerializer, \
     OrderItemSerializer, MenuItemAvailabilitySerializer
-from .permissions import IsManager, IsDeliveryCrew, IsCustomer
+from .permissions import IsManager, IsDeliveryCrew, IsCustomer, IsCustomerAndHasBoughtItem
 
 
 class ListCategory(APIView):
@@ -655,7 +656,7 @@ class SaleReport(APIView):
 
 class MenuItemRatings(APIView):
     authentication_classes = [TokenAuthentication, BasicAuthentication, SessionAuthentication]
-    permission_classes = [IsCustomer]
+    permission_classes = [IsCustomerAndHasBoughtItem]
 
     def get(self, request: Request, pk=None):
         if pk:
