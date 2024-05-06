@@ -239,7 +239,7 @@ New users can register by making a POST request to the following endpoint:
 POST /auth/users/
 ```
 The request body should include two required fields:
-```bash
+```json
 {
     "username": "username",
     "password": "password"
@@ -285,6 +285,63 @@ Returns the sales report for today and amount of orders.
     "message": "Your sale from 2023-4-27 to 2024-05-01 is 2438 for 73 orders."
 }
 ```
+## Rating API
+This API provides access for users to rate an item if they have ordered that item at least once.
+
+### Endpoints
+#### GET /rate
+It Shows Menu items with rates counts and rates averages.
+```json
+[
+    {
+        "id": 1,
+        "title": "Vanilla",
+        "category": 5,
+        "_category_title": "Ice creams",
+        "price": "3.00",
+        "featured": true,
+        "rate": {
+            "rate_count": 246,
+            "rate_average": 8.9
+        }
+    },
+    {
+        "id": 2,
+        "title": "Chocolate",
+        "category": 5,
+        "_category_title": "Ice creams",
+        "price": "4.00",
+        "featured": false,
+        "rate": {
+            "rate_count": 325,
+            "rate_average": 8.74
+        }
+    },
+    {
+        "id": 3,
+        "title": "Mango",
+        "category": 5,
+        "_category_title": "Ice creams",
+        "price": "7.00",
+        "featured": true,
+        "rate": {
+            "rate_count": 436,
+            "rate_average": 9.14
+        }
+    },
+  .
+  .
+  .
+]
+```
+#### POST /rate/<<int:menuItem_id>>
+Customers can submit a rating between 1 and 10 (just integer) in JSON format:
+```json
+{
+  "rate": 9
+}
+```
+
 ## And much more capabilities!
 
 
