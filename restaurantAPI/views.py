@@ -19,12 +19,12 @@ from ratings.serializers import RateCreateSerializer
 from .models import MenuItem, Cart, OrderItem, Order, Category
 from .serializers import MenuItemSerializer, UserSerializer, CartSerializer, OrderSerializer, CategorySerializer, \
     OrderItemSerializer, MenuItemAvailabilitySerializer
-from .permissions import IsManager, IsDeliveryCrew, IsCustomer, IsCustomerAndHasBoughtItem
+from .permissions import IsManager, IsDeliveryCrew, IsCustomer, IsCustomerAndHasBoughtItem, IsManagerOrCustomerReadOnly
 
 
 class ListCategory(APIView):
     authentication_classes = [TokenAuthentication, BasicAuthentication, SessionAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsManagerOrCustomerReadOnly]
 
     def get(self, request: Request, pk=None):
         if pk:
@@ -41,42 +41,31 @@ class ListCategory(APIView):
             return Response({"message": "The post method has not to get pk argument"},
                             status=status.HTTP_400_BAD_REQUEST)
         else:
-            if request.user.groups.filter(name='manager').exists():  # only manger group members can use post method
-                ser = CategorySerializer(data=request.data)
-                if ser.is_valid():
-                    ser.save()
-                    return Response(ser.data, status.HTTP_201_CREATED)
-                else:
-                    return Response(ser.errors, status.HTTP_400_BAD_REQUEST)
-            else:
-                return Response({"message": "You have not permission for this action"},
-                                status=status.HTTP_403_FORBIDDEN)
-
-    def put(self, request: Request, pk):
-        if request.user.groups.filter(name='manager').exists():  # only manager group members can use put method
-            try:
-                queryset = get_object_or_404(Category, pk=pk)
-                ser = CategorySerializer(queryset, data=request.data)
-            except Category.DoesNotExist:
-                return Response({"message": "This menu item does not exists"}, status=status.HTTP_400_BAD_REQUEST)
+            ser = CategorySerializer(data=request.data)
             if ser.is_valid():
                 ser.save()
-                return Response([{"message": f"'{queryset.title}' updated"}, ser.data], status=status.HTTP_200_OK)
-        else:
-            return Response({"message": "You have not permission for this action"}, status=status.HTTP_403_FORBIDDEN)
+                return Response(ser.data, status.HTTP_201_CREATED)
+            else:
+                return Response(ser.errors, status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request: Request, pk):
+        try:
+            queryset = get_object_or_404(Category, pk=pk)
+            ser = CategorySerializer(queryset, data=request.data)
+        except Category.DoesNotExist:
+            return Response({"message": "This menu item does not exists"}, status=status.HTTP_400_BAD_REQUEST)
+        if ser.is_valid():
+            ser.save()
+            return Response([{"message": f"'{queryset.title}' updated"}, ser.data], status=status.HTTP_200_OK)
 
     def delete(self, request: Request, pk):
-        if request.user.groups.filter(name='manager').exists():  # only manager group members can use delete method
-            try:
-                queryset = get_object_or_404(Category, pk=pk)
-            except Category.DoesNotExist:
-                return Response({"message": "This menu item does not exist"}, status=status.HTTP_400_BAD_REQUEST)
-            else:
-                queryset.delete()
-                return Response({"message": f"'{queryset.title}' Deleted"}, status=status.HTTP_204_NO_CONTENT)
+        try:
+            queryset = get_object_or_404(Category, pk=pk)
+        except Category.DoesNotExist:
+            return Response({"message": "This menu item does not exist"}, status=status.HTTP_400_BAD_REQUEST)
         else:
-            return Response({"message": "You have not permission for this action"},
-                            status=status.HTTP_403_FORBIDDEN)
+            queryset.delete()
+            return Response({"message": f"'{queryset.title}' Deleted"}, status=status.HTTP_204_NO_CONTENT)
 
 
 class ListMenuItems(APIView):
