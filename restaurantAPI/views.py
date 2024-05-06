@@ -668,15 +668,19 @@ class MenuItemRatings(APIView):
             ser = MenuItemSerializer(queryset, many=True)
             return Response(ser.data, status=status.HTTP_200_OK)
 
-    def post(self, request: Request):
-        try:
-            user_rate = request.data['rate']
-            menu_item = request.data['menuitem']
-            menuitem = get_object_or_404(MenuItem, pk=menu_item).id
-        except (ValueError, KeyError):
-            return Response(
-                {"error": "'rate' and 'menuitem' fields are required. 'rate' must be an integer between 1 to 10 and 'menuitem' must be the ID of the menu item."},
-                status=status.HTTP_400_BAD_REQUEST)
+    def post(self, request: Request, pk):
+        user_past_rate_for_this_item = Rate.objects.filter(user_id=request.user.id, object_id=pk).exists()
+        if user_past_rate_for_this_item:
+            return Response({"error": "You had rate for this item before."}, status=status.HTTP_403_FORBIDDEN)
+        else:
+            try:
+                user_rate = request.data['rate']
+                menuitem = get_object_or_404(MenuItem, pk=pk).id
+            except (ValueError, KeyError):
+                return Response(
+                    {
+                        "error": "'rate' field is required. 'rate' must be an integer between 1 to 10."},
+                    status=status.HTTP_400_BAD_REQUEST)
 
         content_type = ContentType.objects.get(app_label='restaurantAPI', model='menuitem').id
 
