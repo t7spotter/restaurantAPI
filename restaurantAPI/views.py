@@ -341,6 +341,10 @@ class OrderManagement(APIView):
         if cart_items == 0:
             return Response({"messages": "No items in your cart"}, status=status.HTTP_400_BAD_REQUEST)
         else:
+            try:
+                customer_address = request.data['address']
+            except (ValueError, KeyError):
+                return Response({"error": "Please enter your address."}, status=status.HTTP_400_BAD_REQUEST)
             user_cart = Cart.objects.filter(user=request.user)
             total_cart_price = user_cart.aggregate(total_price=Sum("price"))['total_price']
             delivery = User.objects.filter(groups__name='delivery', is_active=True, ready_to_work=True)
@@ -351,6 +355,7 @@ class OrderManagement(APIView):
                 "delivery_crew": random_delivery,
                 "status": False,
                 "total": total_cart_price,
+                "customer_address": customer_address,
                 "date": timezone.now().date(),
             }
 
