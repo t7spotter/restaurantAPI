@@ -91,3 +91,18 @@ class Profile(models.Model):
 
     def __str__(self):
         return f'Profile of {self.user.username}'
+
+
+class Address(models.Model):
+    profile = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='addresses')
+    city = models.CharField(max_length=100)
+    country = models.CharField(max_length=100)
+    details = models.TextField(blank=False, null=True)
+
+    class Meta:
+        db_table = 'Addresses'
+        verbose_name = 'Address'
+        verbose_name_plural = 'Addresses'
+
+    def __str__(self):
+        return f'Address of {self.profile.user.username}'
