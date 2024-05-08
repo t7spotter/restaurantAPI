@@ -406,6 +406,8 @@ class OrderDeliveryStatusManagement(APIView):
                 ser = OrderSerializer(order)
                 return Response({"order": ser.data, "message": f"Order number {order.id} delivered successfully"},
                                 status=status.HTTP_200_OK)
+        else:
+            return Response({"error": "Unusual action", "status": status.HTTP_400_BAD_REQUEST})
 
 
 class DeliveryCrewReadyToWorkStatusManagement(APIView):
