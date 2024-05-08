@@ -54,6 +54,7 @@ class Order(models.Model):
         User, on_delete=models.SET_NULL, related_name="delivery_crew", null=True)
     status = models.BooleanField(default=0, db_index=True)
     total = models.DecimalField(max_digits=6, decimal_places=2, default=0)
+    customer_address = models.TextField(blank=False, null=False, default='in restaurant')
     date = models.DateField(db_index=True)
     delivered_time = models.DateTimeField(null=True, blank=True, default=None)
 
