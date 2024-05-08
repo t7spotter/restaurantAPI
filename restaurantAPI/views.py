@@ -321,7 +321,7 @@ class OrderManagement(APIView):
                 ser = OrderSerializer(queryset)
                 return Response(ser.data, status=status.HTTP_200_OK)
             elif not pk:
-                queryset = Order.objects.order_by('date', 'user').all()
+                queryset = Order.objects.order_by('-date', 'user').all()
                 ser = OrderSerializer(queryset, many=True)
                 return Response(ser.data, status=status.HTTP_200_OK)
 
