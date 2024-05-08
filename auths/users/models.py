@@ -77,3 +77,17 @@ class User(AbstractBaseUser, PermissionsMixin):
     def email_user(self, subject, message, from_email=None, **kwargs):
         """Send an mail to this user."""
         send_mail(subject, message, from_email, [self.email], **kwargs)
+
+
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    phone_number = models.CharField(max_length=11, blank=True)
+    details = models.TextField(blank=True, null=True)
+
+    class Meta:
+        db_table = 'profiles'
+        verbose_name = 'profile'
+        verbose_name_plural = 'profiles'
+
+    def __str__(self):
+        return f'Profile of {self.user.username}'
