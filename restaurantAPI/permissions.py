@@ -65,3 +65,17 @@ class IsManagerOrCustomerReadOnly(BasePermission):
             return is_authenticated.has_permission(request, view)
         else:
             return False
+
+
+class IsCustomerOrManagerReadOnly(BasePermission):
+    def has_permission(self, request, view):
+        if request.method == 'POST':
+            if bool(request.user and
+                    request.user.groups.filter(name='customer').exists()):
+                return True
+            return False
+        elif request.method == 'GET':
+            is_authenticated = IsAuthenticated()
+            return is_authenticated.has_permission(request, view)
+        else:
+            return False
