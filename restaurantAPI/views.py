@@ -335,6 +335,8 @@ class OrderManagement(APIView):
                 queryset = Order.objects.filter(user=request.user).order_by('date')
                 ser = OrderSerializer(queryset, many=True)
                 return Response(ser.data, status=status.HTTP_200_OK)
+        else:
+            return Response({"error": "403 Forbidden"}, status=status.HTTP_403_FORBIDDEN)
 
     def post(self, request: Request):
         cart_items = Cart.objects.filter(user=request.user).count()
