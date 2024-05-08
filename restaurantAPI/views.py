@@ -19,7 +19,8 @@ from ratings.serializers import RateCreateSerializer
 from .models import MenuItem, Cart, OrderItem, Order, Category
 from .serializers import MenuItemSerializer, UserSerializer, CartSerializer, OrderSerializer, CategorySerializer, \
     OrderItemSerializer, MenuItemAvailabilitySerializer
-from .permissions import IsManager, IsDeliveryCrew, IsCustomer, IsCustomerAndHasBoughtItem, IsManagerOrCustomerReadOnly
+from .permissions import IsManager, IsDeliveryCrew, IsCustomer, IsCustomerAndHasBoughtItem, IsManagerOrCustomerReadOnly, \
+    IsCustomerOrManagerReadOnly
 
 
 class ListCategory(APIView):
@@ -312,7 +313,7 @@ class UserCartManager(APIView):
 
 class OrderManagement(APIView):
     authentication_classes = [TokenAuthentication, BasicAuthentication, SessionAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsCustomerOrManagerReadOnly]
 
     def get(self, request: Request, pk=None):
         if request.user.groups.filter(name='manager'):
