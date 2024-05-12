@@ -13,7 +13,8 @@ from rest_framework import status
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication, TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 
-from auths.users.models import User
+from auths.users.models import User, Address
+from auths.users.serializers import AddressSerializer
 from ratings.models import Rate
 from ratings.serializers import RateCreateSerializer
 from .models import MenuItem, Cart, OrderItem, Order, Category
@@ -343,10 +344,38 @@ class OrderManagement(APIView):
         if cart_items == 0:
             return Response({"messages": "No items in your cart"}, status=status.HTTP_400_BAD_REQUEST)
         else:
-            try:
-                customer_address = request.data['address']
-            except (ValueError, KeyError):
-                return Response({"error": "Please enter your address."}, status=status.HTTP_400_BAD_REQUEST)
+            user_addresses = Address.objects.filter(profile__user=request.user)
+
+            if len(user_addresses) == 1:
+                user_address = user_addresses.first()
+            elif len(user_addresses) > 1:
+                if "address_id" in request.data:
+                    user_address_id = int(request.data["address_id"])
+                    user_address_obj = get_object_or_404(Address, id=user_address_id)
+                    user_address = f"{user_address_obj.details}, {user_address_obj.city}, {user_address_obj.country}"
+                else:
+                    return Response({
+                        "messages": f'You have {len(user_addresses)} addresses in your profile. please send your intended address_id in this form: {{"address_id":<address_id>}}'},
+                        status=status.HTTP_400_BAD_REQUEST)
+            else:
+                try:
+                    user_input_address = {
+                        "profile": request.user.profile.id,
+                        "country": request.data['country'],
+                        "city": request.data['city'],
+                        "details": request.data['details']
+                    }
+                    ser = AddressSerializer(data=user_input_address)
+                    if ser.is_valid():
+                        address = ser.save()
+                        user_address = f"{address.details}, {address.city}, {address.country}"
+                        return Response(["Success", ser.data], status=status.HTTP_200_OK)
+                    else:
+                        return Response(ser.errors, status=status.HTTP_400_BAD_REQUEST)
+                except (ValueError, KeyError):
+                    return Response({
+                        "error": "Please enter your address in true format: {'details': '', 'city': '', 'country': ''}"},
+                        status=status.HTTP_400_BAD_REQUEST)
             user_cart = Cart.objects.filter(user=request.user)
             total_cart_price = user_cart.aggregate(total_price=Sum("price"))['total_price']
             delivery = User.objects.filter(groups__name='delivery', is_active=True, ready_to_work=True)
@@ -357,7 +386,7 @@ class OrderManagement(APIView):
                 "delivery_crew": random_delivery,
                 "status": False,
                 "total": total_cart_price,
-                "customer_address": customer_address,
+                "customer_address": user_address,
                 "date": timezone.now().date(),
             }
 
