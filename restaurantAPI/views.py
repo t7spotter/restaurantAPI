@@ -21,7 +21,7 @@ from .models import MenuItem, Cart, OrderItem, Order, Category
 from .serializers import MenuItemSerializer, UserSerializer, CartSerializer, OrderSerializer, CategorySerializer, \
     OrderItemSerializer, MenuItemAvailabilitySerializer
 from .permissions import IsManager, IsDeliveryCrew, IsCustomer, IsCustomerAndHasBoughtItem, IsManagerOrCustomerReadOnly, \
-    IsCustomerOrManagerReadOnly
+    IsCustomerOrManagerReadOnly, IsManagerCanSeeAllButCustomerNot
 
 
 class ListCategory(APIView):
@@ -713,3 +713,18 @@ class MenuItemRatings(APIView):
             return Response(ser.data, status.HTTP_201_CREATED)
         else:
             return Response(ser.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CustomerAddressManagement(APIView):
+    authentication_classes = [TokenAuthentication, BasicAuthentication, SessionAuthentication]
+    permission_classes = [IsCustomer]
+
+    def get(self, request: Request, pk=None):
+        if pk:
+            customer_address = get_object_or_404(Address, profile__user=request.user, pk=pk)
+            ser = AddressSerializer(customer_address)
+            return Response(ser.data, status=status.HTTP_200_OK)
+        else:
+            customer_addresses = Address.objects.filter(profile__user=request.user)
+            ser = AddressSerializer(customer_addresses, many=True)
+            return Response(ser.data, status.HTTP_200_OK)
