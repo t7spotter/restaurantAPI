@@ -728,3 +728,15 @@ class CustomerAddressManagement(APIView):
             customer_addresses = Address.objects.filter(profile__user=request.user)
             ser = AddressSerializer(customer_addresses, many=True)
             return Response(ser.data, status.HTTP_200_OK)
+
+    def post(self, request: Request):
+        address_data = request.data
+        user_profile = request.user.profile.id
+        address_data['profile'] = user_profile
+
+        ser = AddressSerializer(data=address_data)
+        if ser.is_valid():
+            ser.save()
+            return Response(ser.data, status=status.HTTP_200_OK)
+        else:
+            return Response(ser.errors, status=status.HTTP_400_BAD_REQUEST)
