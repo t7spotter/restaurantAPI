@@ -21,7 +21,7 @@ from .models import MenuItem, Cart, OrderItem, Order, Category
 from .serializers import MenuItemSerializer, UserSerializer, CartSerializer, OrderSerializer, CategorySerializer, \
     OrderItemSerializer, MenuItemAvailabilitySerializer
 from .permissions import IsManager, IsDeliveryCrew, IsCustomer, IsCustomerAndHasBoughtItem, IsManagerOrCustomerReadOnly, \
-    IsCustomerOrManagerReadOnly, IsManagerCanSeeAllButCustomerNot
+    IsCustomerOrManagerReadOnly
 
 
 class ListCategory(APIView):
@@ -740,3 +740,12 @@ class CustomerAddressManagement(APIView):
             return Response(ser.data, status=status.HTTP_200_OK)
         else:
             return Response(ser.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request: Request, pk):
+        try:
+            address = get_object_or_404(Address, profile__user=request.user, pk=pk)
+        except Address.DoesNotExist:
+            return Response({"message": "This menu item does not exist"}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            address.delete()
+            return Response({"message": f"'{address.details} {address.city} {address.country}' Deleted from your profile."}, status=status.HTTP_204_NO_CONTENT)
