@@ -342,6 +342,15 @@ Customers can submit a rating between 1 and 10 (just integer) in JSON format:
 }
 ```
 
+## Users Address Management
+users can get, add and remove their own addresses from profile
+### Endpoints
+GET /address
+
+POST /address
+
+DELETE /address/<<int:address_id>>
+
 ## And much more capabilities!
 
 
