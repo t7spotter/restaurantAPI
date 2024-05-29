@@ -731,8 +731,7 @@ class CustomerAddressManagement(APIView):
 
     def post(self, request: Request):
         address_data = request.data
-        user_profile = request.user.profile.id
-        address_data['profile'] = user_profile
+        address_data['profile'] = request.user.profile.id
 
         ser = AddressSerializer(data=address_data)
         if ser.is_valid():
@@ -748,4 +747,6 @@ class CustomerAddressManagement(APIView):
             return Response({"message": "This menu item does not exist"}, status=status.HTTP_400_BAD_REQUEST)
         else:
             address.delete()
-            return Response({"message": f"'{address.details} {address.city} {address.country}' Deleted from your profile."}, status=status.HTTP_204_NO_CONTENT)
+            return Response(
+                {"message": f"'{address.details} {address.city} {address.country}' Deleted from your profile."},
+                status=status.HTTP_204_NO_CONTENT)
