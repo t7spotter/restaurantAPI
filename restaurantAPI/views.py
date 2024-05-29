@@ -3,7 +3,7 @@ import random
 from django.contrib.auth.models import Group
 from django.contrib.contenttypes.models import ContentType
 from django.db import IntegrityError
-from django.db.models import Sum, Count, Q
+from django.db.models import Sum, Count, Q, Avg
 from django.shortcuts import get_object_or_404, redirect
 from django.utils import timezone
 from rest_framework.views import APIView
@@ -85,6 +85,7 @@ class ListMenuItems(APIView):
         to_price = self.request.query_params.get('to_price', None)
         from_price = self.request.query_params.get('from_price', None)
         featured_items = self.request.query_params.get('featured', None)
+        from_rate = self.request.query_params.get('from_rate', None)
 
         if search:
             queryset = queryset.filter(title__icontains=search)
@@ -103,6 +104,10 @@ class ListMenuItems(APIView):
 
         if featured_items:
             queryset = queryset.filter(featured=True)
+
+        if from_rate:
+            queryset = queryset.annotate(avg_rate=Avg('rate__rate'))
+            queryset = queryset.filter(avg_rate__gte=float(from_rate))
 
         return queryset
 
