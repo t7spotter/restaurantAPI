@@ -186,6 +186,10 @@ class ManagerGroupManagement(APIView):
         managers = get_object_or_404(Group, name='manager')
 
         user.groups.remove(managers)
+
+        user.is_staff = False
+        user.save()
+
         return Response({"message": f"'{user}' deleted from the manager group"}, status=status.HTTP_204_NO_CONTENT)
 
 
